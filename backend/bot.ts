@@ -8,10 +8,16 @@ const client = new Client({
 
 client.on(Events.ClientReady, () => {
   console.log("Bot is ready!");
+
+  client.user?.setActivity('Minting NFTs');
 });
 
 client.on(Events.Error, (error) => {
   console.error(error);
+});
+
+client.on(Events.ShardError, error => {
+	console.error('A websocket connection encountered an error:', error);
 });
 
 client.on(Events.InteractionCreate, async (interaction) => {

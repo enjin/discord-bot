@@ -1,23 +1,37 @@
 import { SlashCommandBuilder, PermissionFlagsBits, ChatInputCommandInteraction } from "discord.js";
 import Zod from "zod";
+import { db, schema } from "../db";
+import { eq } from "drizzle-orm";
 
 export default {
   data: new SlashCommandBuilder()
     .setName("setup")
     .setDescription("Setup the bot")
     .setDefaultMemberPermissions(PermissionFlagsBits.Administrator)
-    .setDMPermission(false)
-    .addStringOption((option) => option.setName("email").setDescription("Provide your email for receiving status updates.").setRequired(true)),
+    .setDMPermission(false),
 
   async handler(interaction: ChatInputCommandInteraction) {
-    const email = interaction.options.getString("email");
-    const validated = Zod.string().email().safeParse(email);
-    if (!validated.success) {
-      await interaction.reply({ content: "Invalid email address.",  ephemeral: true });
+    if (!interaction.inGuild()) {
+      await interaction.reply({ content: "This command can only be used in a server.", ephemeral: true });
       return;
     }
-    
 
-    await interaction.reply({ content: "Secret Pong!", ephemeral: true });
+    // check if admin
+    const isAdmin = interaction.memberPermissions.has(PermissionFlagsBits.Administrator);
+
+    if (!isAdmin) {
+      await interaction.reply({ content: "You do not have permission to run this command.", ephemeral: true });
+      return;
+    }
+
+    const server = await db.query.servers.findFirst({
+      where: eq(schema.servers.id, interaction.guildId)
+    });
+
+    if (!server) {
+      await db.insert(schema.servers).values({ id: interaction.guildId, name: interaction.guild?.name });
+    }
+
+    await interaction.reply({ content: "Your config has been successfully saved", ephemeral: true });
   }
 };
