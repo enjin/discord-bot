@@ -1,1 +1,0 @@
-ALTER TABLE `servers` ADD `email` text;

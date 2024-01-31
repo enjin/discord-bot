@@ -6,7 +6,7 @@ export const servers = mysqlTable("servers", {
   email: text("email"),
   connectedAt: timestamp("connected_at").defaultNow(),
   config: json("config").$type<Record<string, string[]>>().default({}),
-  version: int("version").default(0)
+  version: int("version").notNull()
 });
 
 export const accountAddress = mysqlTable(

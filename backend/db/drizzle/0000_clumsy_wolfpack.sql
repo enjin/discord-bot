@@ -14,10 +14,12 @@ CREATE TABLE `connected_accounts` (
 CREATE TABLE `servers` (
 	`id` varchar(20) NOT NULL,
 	`name` text,
+	`email` text,
 	`connected_at` timestamp DEFAULT (now()),
 	`config` json DEFAULT ('{}'),
+	`version` int NOT NULL,
 	CONSTRAINT `servers_id` PRIMARY KEY(`id`)
 );
 --> statement-breakpoint
-ALTER TABLE `account_address` ADD CONSTRAINT `account_address_member_id_connected_accounts_id_fk` FOREIGN KEY (`member_id`) REFERENCES `connected_accounts`(`id`) ON DELETE no action ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE `account_address` ADD CONSTRAINT `account_address_member_id_connected_accounts_id_fk` FOREIGN KEY (`member_id`) REFERENCES `connected_accounts`(`id`) ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE `connected_accounts` ADD CONSTRAINT `connected_accounts_id_servers_id_fk` FOREIGN KEY (`id`) REFERENCES `servers`(`id`) ON DELETE no action ON UPDATE no action;

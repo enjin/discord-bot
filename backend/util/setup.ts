@@ -7,7 +7,7 @@ export async function setupGuild(guildId: string, guildName: string) {
   });
 
   if (!server) {
-    await db.insert(schema.servers).values({ id: guildId, name: guildName }).execute();
+    await db.insert(schema.servers).values({ id: guildId, name: guildName, version: 1 }).execute();
   }
 }
 

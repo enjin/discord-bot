@@ -1,7 +1,7 @@
 {
   "version": "5",
   "dialect": "mysql",
-  "id": "3b0f8c2b-6b93-4024-b767-587dce610cb5",
+  "id": "f6ace8f8-1c56-46a6-9a5f-8fda1978f490",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "tables": {
     "account_address": {
@@ -34,7 +34,7 @@
           "columnsTo": [
             "id"
           ],
-          "onDelete": "no action",
+          "onDelete": "cascade",
           "onUpdate": "no action"
         }
       },
@@ -118,6 +118,13 @@
           "notNull": false,
           "autoincrement": false
         },
+        "email": {
+          "name": "email",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
         "connected_at": {
           "name": "connected_at",
           "type": "timestamp",
@@ -133,6 +140,13 @@
           "notNull": false,
           "autoincrement": false,
           "default": "('{}')"
+        },
+        "version": {
+          "name": "version",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
         }
       },
       "indexes": {},

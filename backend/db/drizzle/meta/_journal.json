@@ -5,22 +5,8 @@
     {
       "idx": 0,
       "version": "5",
-      "when": 1706645202867,
-      "tag": "0000_fuzzy_cobalt_man",
-      "breakpoints": true
-    },
-    {
-      "idx": 1,
-      "version": "5",
-      "when": 1706645368880,
-      "tag": "0001_simple_wither",
-      "breakpoints": true
-    },
-    {
-      "idx": 2,
-      "version": "5",
-      "when": 1706648741975,
-      "tag": "0002_mute_tana_nile",
+      "when": 1706689089844,
+      "tag": "0000_clumsy_wolfpack",
       "breakpoints": true
     }
   ]
