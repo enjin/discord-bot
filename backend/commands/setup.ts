@@ -8,7 +8,7 @@ import {
 } from "discord.js";
 import { db, schema } from "../db";
 import { eq } from "drizzle-orm";
-import { getServerOrFail, setupGuild } from "../util/setup";
+import { getServerOrFail, setupGuild } from "../util/server";
 import { getToken } from "../util/api";
 
 export default {

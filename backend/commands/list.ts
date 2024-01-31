@@ -3,7 +3,7 @@ import {
   PermissionFlagsBits,
   ChatInputCommandInteraction,
 } from "discord.js";
-import { getServerOrFail, setupGuild } from "../util/setup";
+import { getServerOrFail, setupGuild } from "../util/server";
 
 
 export default {

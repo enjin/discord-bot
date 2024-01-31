@@ -1,7 +1,7 @@
 import { SlashCommandBuilder, ChatInputCommandInteraction, Role, GuildMemberRoleManager } from "discord.js";
 import { connectToWC, getClient } from "../util/wc";
 import config from "../config";
-import { getServerOrFail } from "../util/setup";
+import { getServerOrFail } from "../util/server";
 import { tokenAccountsOfTokens } from "../util/api";
 
 export default {

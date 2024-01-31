@@ -1,7 +1,7 @@
 import { Client, Events, GatewayIntentBits } from "discord.js";
 import { commandCollection } from "./commands";
 import config from "./config";
-import { setupGuild } from "./util/setup";
+import { removeGuild, setupGuild } from "./util/server";
 
 const client = new Client({
   intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMessages, GatewayIntentBits.GuildModeration,]
@@ -24,6 +24,13 @@ client.on(Events.GuildCreate, async (guild) => {
   setupGuild(guild.id, guild.name);
   console.log(`Joined ${guild.name}`);
 });
+
+client.on(Events.GuildDelete, async (guild) => {
+  removeGuild(guild.id);
+  console.log(`removed ${guild.name}`);
+});
+
+
 
 client.on(Events.InteractionCreate, async (interaction) => {
   try {

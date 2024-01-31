@@ -11,6 +11,10 @@ export async function setupGuild(guildId: string, guildName: string) {
   }
 }
 
+export async function removeGuild(guildId: string) {
+  await db.delete(schema.servers).where(eq(schema.servers.id, guildId)).execute();
+}
+
 export async function getServerOrFail(guildId: string) {
   const server = await db.query.servers.findFirst({
     where: eq(schema.servers.id, guildId)
