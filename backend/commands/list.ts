@@ -26,7 +26,11 @@ export default {
 
     const server = await getServerOrFail(interaction.guildId!);
 
-    const message = Object.entries(server.config as Record<string, string[]>).reduce((content, [key, roles], index) => {
+    if(!server.config || Object.keys(server.config).length === 0){
+      return interaction.reply({ content: "No roles configured.", ephemeral: true });
+    }
+
+    const message = Object.entries(server.config).reduce((content, [key, roles], index) => {
         return content + `${index + 1}. ${key} has roles ${roles.map(r=>interaction.guild?.roles.cache.get(r)).join(', ')}\n`;
     }, "");
 
