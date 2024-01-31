@@ -11,6 +11,7 @@ export const connection = await mysql.createConnection({
 
 export const db = drizzle(connection, { schema, mode: "default" });
 
+console.log("Migrating database...");
 await migrate(db, { migrationsFolder: "./backend/db/drizzle" });
 
 await connection.end();

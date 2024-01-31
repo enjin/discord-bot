@@ -1,0 +1,30 @@
+version: "3.9"
+
+services:
+  db:
+    container_name: discord_bot_db
+    image: mysql:5.7
+    restart: always
+    environment:
+      MYSQL_DATABASE: "discord_bot"
+      MYSQL_ROOT_PASSWORD: "root"
+    expose:
+      - 3306
+    ports:
+      - 3444:3306
+    volumes:
+      - discord_bot_db:/var/lib/mysql
+
+  bot:
+    container_name: discord_bot
+    restart: always
+    image: justraman/nft.io-discord-bot:latest
+    build:
+      context: .
+    env_file:
+      - stack.env
+    depends_on:
+      - db
+
+volumes:
+  discord_bot_db:
