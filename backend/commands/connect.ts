@@ -46,10 +46,11 @@ export default {
           })
           .flat();
 
-        await interaction.followUp({
-          content: `${interaction.member} assigned with ${totalRoles.join(", ")}`,
-          ephemeral: false,
-        });
+        try {
+          await interaction.channel?.send({
+            content: `${interaction.member} has been given ${totalRoles.join(", ")}`
+          });
+        } catch (error) {}
 
         if (interaction.member.roles instanceof GuildMemberRoleManager) {
           await interaction.member.roles.add(totalRoles);
