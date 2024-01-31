@@ -5,14 +5,15 @@ export const servers = mysqlTable("servers", {
   name: text("name"),
   email: text("email"),
   connectedAt: timestamp("connected_at").defaultNow(),
-  config: json("config").default({})
+  config: json("config").$type<Record<string, string[]>>().default({}),
+  version: int("version").default(0)
 });
 
 export const accountAddress = mysqlTable(
   "account_address",
   {
     address: varchar("address", { length: 45 }),
-    accountId: varchar("member_id", { length: 20 }).references(() => connectedAccounts.id)
+    accountId: varchar("member_id", { length: 20 }).references(() => connectedAccounts.id, { onDelete: "cascade" })
   },
   (table) => {
     return {

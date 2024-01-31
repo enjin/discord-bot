@@ -19,7 +19,7 @@ const initWC2Client = async () => {
 const initWC2ClientPromise = initWC2Client();
 
 export const connectToWC = async () => {
-  const client = await initWC2ClientPromise;
+  const client = await getClient();
   const { uri, approval } = await client.connect({
     requiredNamespaces: {
       polkadot: {
@@ -38,3 +38,9 @@ export const connectToWC = async () => {
 
   return { uri, approval, attachment };
 };
+
+export const getClient = async () => {
+  const client = await initWC2ClientPromise;
+
+  return client;
+}

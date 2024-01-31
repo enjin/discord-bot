@@ -1,37 +1,57 @@
-import { SlashCommandBuilder, PermissionFlagsBits, ChatInputCommandInteraction } from "discord.js";
-import Zod from "zod";
+import {
+  SlashCommandBuilder,
+  PermissionFlagsBits,
+  ChatInputCommandInteraction,
+  ActionRowBuilder,
+  RoleSelectMenuBuilder,
+  ComponentType
+} from "discord.js";
 import { db, schema } from "../db";
 import { eq } from "drizzle-orm";
+import { getServerOrFail, setupGuild } from "../util/setup";
+import { getToken } from "../util/api";
 
 export default {
   data: new SlashCommandBuilder()
     .setName("setup")
     .setDescription("Setup the bot")
     .setDefaultMemberPermissions(PermissionFlagsBits.Administrator)
+    .addStringOption((option) => option.setName("token").setDescription("Enter tokenId e.g. 2100-17").setRequired(true))
     .setDMPermission(false),
 
   async handler(interaction: ChatInputCommandInteraction) {
+    setupGuild(interaction.guildId!, interaction.guild!.name);
     if (!interaction.inGuild()) {
-      await interaction.reply({ content: "This command can only be used in a server.", ephemeral: true });
-      return;
+      return interaction.reply({ content: "This command can only be used in a server.", ephemeral: true });
     }
 
-    // check if admin
-    const isAdmin = interaction.memberPermissions.has(PermissionFlagsBits.Administrator);
-
-    if (!isAdmin) {
-      await interaction.reply({ content: "You do not have permission to run this command.", ephemeral: true });
-      return;
+    if (!interaction.memberPermissions.has(PermissionFlagsBits.Administrator)) {
+      return interaction.reply({ content: "You do not have permission to run this command.", ephemeral: true });
     }
 
-    const server = await db.query.servers.findFirst({
-      where: eq(schema.servers.id, interaction.guildId)
+    const tokenId = interaction.options.getString("token", true).trim();
+
+    if ((await getToken(tokenId)) === null) {
+      return interaction.reply({ content: "Invalid token id", ephemeral: true });
+    }
+
+    const roleBuilder = new RoleSelectMenuBuilder().setCustomId("role").setPlaceholder("Select a role").setMinValues(1).setMaxValues(5);
+
+    const row = new ActionRowBuilder<RoleSelectMenuBuilder>().addComponents(roleBuilder);
+
+    const response = await interaction.reply({ components: [row], content: "Please select a role", ephemeral: true });
+
+    const server = await getServerOrFail(interaction.guildId!);
+
+    const config: Record<string, string[]> = Object.assign({}, server.config);
+
+    const collector = response.createMessageComponentCollector({ componentType: ComponentType.RoleSelect, time: 30_000 });
+
+    collector.on("collect", async (i) => {
+      const selection = i.values;
+      config[tokenId] = selection;
+      await db.update(schema.servers).set({ config: config }).where(eq(schema.servers.id, i.guildId!)).execute();
+      await i.reply({ content: `Roles ${i.roles.map(m=>m.name).join(', ')} added to token ${tokenId}`, ephemeral: true });
     });
-
-    if (!server) {
-      await db.insert(schema.servers).values({ id: interaction.guildId, name: interaction.guild?.name });
-    }
-
-    await interaction.reply({ content: "Your config has been successfully saved", ephemeral: true });
   }
 };

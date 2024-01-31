@@ -1,23 +1,28 @@
 import { Client, Events, GatewayIntentBits } from "discord.js";
 import { commandCollection } from "./commands";
 import config from "./config";
+import { setupGuild } from "./util/setup";
 
 const client = new Client({
-  intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMessages]
+  intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMessages, GatewayIntentBits.GuildModeration,]
 });
 
 client.on(Events.ClientReady, () => {
   console.log("Bot is ready!");
-
-  client.user?.setActivity('Minting NFTs');
+  client.user?.setActivity("Minting NFTs");
 });
 
 client.on(Events.Error, (error) => {
   console.error(error);
 });
 
-client.on(Events.ShardError, error => {
-	console.error('A websocket connection encountered an error:', error);
+client.on(Events.ShardError, (error) => {
+  console.error("A websocket connection encountered an error:", error);
+});
+
+client.on(Events.GuildCreate, async (guild) => {
+  setupGuild(guild.id, guild.name);
+  console.log(`Joined ${guild.name}`);
 });
 
 client.on(Events.InteractionCreate, async (interaction) => {

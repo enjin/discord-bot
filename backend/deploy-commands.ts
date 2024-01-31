@@ -7,7 +7,6 @@ const rest = new REST().setToken(config.botToken);
 (async () => {
   try {
     console.log(`Started refreshing ${commands.length} application (/) commands.`);
-    console.log(commands, config);
     
     if (config.guildId) {
       await rest.put(Routes.applicationGuildCommands(config.clientId, config.guildId), { body: commands });

@@ -4,7 +4,7 @@ const envSchema = z.object({
   botToken: z.string(),
   indexerUrl: z.string().url().trim(),
   clientId: z.string(),
-  wcNamespace: z.string(),
+  wcNamespace: z.string().trim(),
   guildId: z.string().optional(),
   dbUrl: z.string()
 });
