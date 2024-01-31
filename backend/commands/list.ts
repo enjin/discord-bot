@@ -14,7 +14,7 @@ export default {
     .setDMPermission(false),
 
   async handler(interaction: ChatInputCommandInteraction) {
-    setupGuild(interaction.guildId!, interaction.guild!.name);
+    await setupGuild(interaction.guildId!, interaction.guild!.name);
 
     if (!interaction.inGuild()) {
       return interaction.reply({ content: "This command can only be used in a server.", ephemeral: true });

@@ -5,7 +5,7 @@ import config from "../config";
 
 export const connection = await mysql.createConnection({
   uri: config.dbUrl,
-  multipleStatements: true
+  multipleStatements: true,
 });
 
 export const db = drizzle(connection, { schema, mode: "default" });
