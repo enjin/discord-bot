@@ -30,8 +30,8 @@ export default {
     }
 
     const tokenId = interaction.options.getString("token", true).trim();
-
-    if ((await getToken(tokenId)) === null) {
+    const token = await getToken(tokenId);
+    if (!token) {
       return interaction.reply({ content: "Invalid token id", ephemeral: true });
     }
 
@@ -39,7 +39,7 @@ export default {
 
     const row = new ActionRowBuilder<RoleSelectMenuBuilder>().addComponents(roleBuilder);
 
-    const response = await interaction.reply({ components: [row], content: "Please select a role", ephemeral: true });
+    const response = await interaction.reply({ components: [row], content: `Please select a roles for ${tokenId} (${token.metadata.name})`, ephemeral: true });
 
     const server = await getServerOrFail(interaction.guildId!);
 
@@ -51,7 +51,7 @@ export default {
       const selection = i.values;
       config[tokenId] = selection;
       await db.update(schema.servers).set({ config: config }).where(eq(schema.servers.id, i.guildId!)).execute();
-      await i.reply({ content: `Roles ${i.roles.map(m=>m.name).join(', ')} added to token ${tokenId}`, ephemeral: true });
+      await i.reply({ content: `Roles ${i.roles.map(m=>m).join(', ')} added to token ${tokenId}`, ephemeral: true });
     });
   }
 };

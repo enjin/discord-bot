@@ -3,6 +3,9 @@ import config from "../config";
 const TOKEN_QUERY = `query GetToken($id: String!) {
     result: tokenById(id: $id){
       id
+      metadata { 
+        name
+    }
     }
   }  
 `;

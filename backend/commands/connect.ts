@@ -47,7 +47,7 @@ export default {
           .flat();
 
         await interaction.followUp({
-          content: `${interaction.member} assigned with ${totalRoles.map((r) => r.name).join(", ")}`,
+          content: `${interaction.member} assigned with ${totalRoles.join(", ")}`,
           ephemeral: false,
         });
 
