@@ -1,5 +1,5 @@
-import connect from "./connect";
 import setup from "./setup";
 import list from "./list";
+import addButton from "./add-button";
 
-export default [connect, setup, list]
+export default [setup, list, addButton];

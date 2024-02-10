@@ -8,7 +8,7 @@ import {
 } from "discord.js";
 import { db, schema } from "../db";
 import { eq } from "drizzle-orm";
-import { getServerOrFail, setupGuild } from "../util/server";
+import { setupGuild } from "../util/server";
 import { getToken } from "../util/api";
 
 export default {
@@ -16,7 +16,7 @@ export default {
     .setName("setup")
     .setDescription("Setup the bot")
     .setDefaultMemberPermissions(PermissionFlagsBits.Administrator)
-    .addStringOption((option) => option.setName("token").setDescription("Enter tokenId e.g. 2100-17").setRequired(true))
+    .addStringOption((option) => option.setName("asset").setDescription("Enter Asset ID e.g. 2100-17").setRequired(true))
     .setDMPermission(false),
 
   async handler(interaction: ChatInputCommandInteraction) {
@@ -29,29 +29,33 @@ export default {
       return interaction.reply({ content: "You do not have permission to run this command.", ephemeral: true });
     }
 
-    const tokenId = interaction.options.getString("token", true).trim();
+    const tokenId = interaction.options.getString("asset", true).trim();
     const token = await getToken(tokenId);
     if (!token) {
-      return interaction.reply({ content: "Invalid token id", ephemeral: true });
+      return interaction.reply({ content: "Invalid asset id", ephemeral: true });
     }
 
     const roleBuilder = new RoleSelectMenuBuilder().setCustomId("role").setPlaceholder("Select a role").setMinValues(1).setMaxValues(5);
 
     const row = new ActionRowBuilder<RoleSelectMenuBuilder>().addComponents(roleBuilder);
 
-    const response = await interaction.reply({ components: [row], content: `Please select a roles for ${tokenId} (${token.metadata.name})`, ephemeral: true });
-
-    const server = await getServerOrFail(interaction.guildId!);
-
-    const config: Record<string, string[]> = Object.assign({}, server.config);
+    const response = await interaction.reply({
+      components: [row],
+      content: `Please select a roles for ${tokenId} (${token.metadata.name})`,
+      ephemeral: true
+    });
 
     const collector = response.createMessageComponentCollector({ componentType: ComponentType.RoleSelect, time: 30_000 });
 
     collector.on("collect", async (i) => {
-      const selection = i.values;
-      config[tokenId] = selection;
-      await db.update(schema.servers).set({ config: config }).where(eq(schema.servers.id, i.guildId!)).execute();
-      await i.reply({ content: `Roles ${i.roles.map(m=>m).join(', ')} added to token ${tokenId}`, ephemeral: true });
+      i.values.forEach(async (selection) => {
+        db.update(schema.serverTokenRoles)
+          .set({ serverId: interaction.guildId!, tokenId, roleId: selection })
+          .where(eq(schema.servers.id, i.guildId!))
+          .execute();
+      });
+
+      await i.reply({ content: `Roles ${i.roles.map((m) => m).join(", ")} added to token ${tokenId}`, ephemeral: true });
     });
   }
 };

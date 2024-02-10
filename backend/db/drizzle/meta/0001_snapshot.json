@@ -1,8 +1,8 @@
 {
   "version": "5",
   "dialect": "mysql",
-  "id": "064ca493-cc3b-4fb9-a68b-6069bafb3ddf",
-  "prevId": "00000000-0000-0000-0000-000000000000",
+  "id": "ec08fc29-42ec-4faa-b5ec-11fc87318f9b",
+  "prevId": "064ca493-cc3b-4fb9-a68b-6069bafb3ddf",
   "tables": {
     "account_address": {
       "name": "account_address",
@@ -67,7 +67,15 @@
           "autoincrement": false
         }
       },
-      "indexes": {},
+      "indexes": {
+        "member_id_index": {
+          "name": "member_id_index",
+          "columns": [
+            "member_id"
+          ],
+          "isUnique": false
+        }
+      },
       "foreignKeys": {
         "connected_accounts_server_id_servers_id_fk": {
           "name": "connected_accounts_server_id_servers_id_fk",
@@ -137,8 +145,8 @@
       },
       "compositePrimaryKeys": {},
       "uniqueConstraints": {
-        "custom_name": {
-          "name": "custom_name",
+        "server_token_roles_unique": {
+          "name": "server_token_roles_unique",
           "columns": [
             "server_id",
             "role_id",

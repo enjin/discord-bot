@@ -8,10 +8,10 @@ const initWC2Client = async () => {
   return SignClient.init({
     projectId: process.env.WALLET_CONNECT_PROJECT_ID,
     metadata: {
-      name: "NFT.io Discord Bot",
-      description: "NFT.io Discord Bot",
-      url: "https://nft.io",
-      icons: ["https://cdn.nft.io/branding/nft-io-square.png"]
+      name: "Enjin Bot",
+      description: "Enjin Discord Bot",
+      url: "https://enjin.io",
+      icons: ["https://enjin.io/favicon.ico"]
     }
   });
 };

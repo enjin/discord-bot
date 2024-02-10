@@ -2,9 +2,10 @@ import { Client, Events, GatewayIntentBits } from "discord.js";
 import { commandCollection } from "./commands";
 import config from "./config";
 import { removeGuild, setupGuild } from "./util/server";
+import { handleConnectButton } from "./util/connect";
 
 const client = new Client({
-  intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMessages, GatewayIntentBits.GuildModeration,]
+  intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMessages, GatewayIntentBits.GuildModeration, GatewayIntentBits.GuildMessages]
 });
 
 client.on(Events.ClientReady, () => {
@@ -30,14 +31,18 @@ client.on(Events.GuildDelete, async (guild) => {
   console.log(`removed ${guild.name}`);
 });
 
-
-
 client.on(Events.InteractionCreate, async (interaction) => {
   try {
     if (interaction.isChatInputCommand()) {
       const command = commandCollection.get(interaction.commandName);
       if (command) {
         await command.handler(interaction);
+      }
+    }
+
+    if (interaction.isButton()) {
+      if(interaction.customId === 'connect-wallet'){
+        await handleConnectButton(interaction)
       }
     }
   } catch (error) {
