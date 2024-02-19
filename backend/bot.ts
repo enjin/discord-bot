@@ -41,8 +41,9 @@ client.on(Events.InteractionCreate, async (interaction) => {
     }
 
     if (interaction.isButton()) {
-      if(interaction.customId === 'connect-wallet'){
+      if(interaction.customId === 'connect-wallet'){  
         await handleConnectButton(interaction)
+
       }
     }
   } catch (error) {

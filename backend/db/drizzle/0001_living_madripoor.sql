@@ -1,0 +1,1 @@
+ALTER TABLE `account_address` MODIFY COLUMN `address` varchar(49) NOT NULL;

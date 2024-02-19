@@ -1,8 +1,8 @@
 {
   "version": "5",
   "dialect": "mysql",
-  "id": "77f0bed1-6309-4e22-a2de-8d2f4c8d5779",
-  "prevId": "6ec44eb0-b1fc-4225-b9e8-e5f35dde9450",
+  "id": "3d6726d5-b076-442a-9e84-697a209a5428",
+  "prevId": "77f0bed1-6309-4e22-a2de-8d2f4c8d5779",
   "tables": {
     "account_address": {
       "name": "account_address",
@@ -16,7 +16,7 @@
         },
         "member_id": {
           "name": "member_id",
-          "type": "varchar(20)",
+          "type": "varchar(41)",
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false

@@ -1,7 +1,7 @@
 {
   "version": "5",
   "dialect": "mysql",
-  "id": "064ca493-cc3b-4fb9-a68b-6069bafb3ddf",
+  "id": "6ec44eb0-b1fc-4225-b9e8-e5f35dde9450",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "tables": {
     "account_address": {
@@ -24,15 +24,15 @@
       },
       "indexes": {},
       "foreignKeys": {
-        "account_address_member_id_connected_accounts_member_id_fk": {
-          "name": "account_address_member_id_connected_accounts_member_id_fk",
+        "account_address_member_id_connected_accounts_id_fk": {
+          "name": "account_address_member_id_connected_accounts_id_fk",
           "tableFrom": "account_address",
           "tableTo": "connected_accounts",
           "columnsFrom": [
             "member_id"
           ],
           "columnsTo": [
-            "member_id"
+            "id"
           ],
           "onDelete": "cascade",
           "onUpdate": "no action"
@@ -52,8 +52,15 @@
     "connected_accounts": {
       "name": "connected_accounts",
       "columns": {
-        "member_id": {
-          "name": "member_id",
+        "id": {
+          "name": "id",
+          "type": "varchar(41)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "user_id": {
+          "name": "user_id",
           "type": "varchar(20)",
           "primaryKey": false,
           "notNull": true,
@@ -84,11 +91,10 @@
         }
       },
       "compositePrimaryKeys": {
-        "connected_accounts_pk": {
-          "name": "connected_accounts_pk",
+        "connected_accounts_id": {
+          "name": "connected_accounts_id",
           "columns": [
-            "server_id",
-            "member_id"
+            "id"
           ]
         }
       },
@@ -137,8 +143,8 @@
       },
       "compositePrimaryKeys": {},
       "uniqueConstraints": {
-        "custom_name": {
-          "name": "custom_name",
+        "server_token_roles_unique": {
+          "name": "server_token_roles_unique",
           "columns": [
             "server_id",
             "role_id",

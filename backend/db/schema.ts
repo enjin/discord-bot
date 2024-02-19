@@ -8,34 +8,25 @@ export const servers = mysqlTable("servers", {
   version: int("version").notNull()
 });
 
-
-export const connectedAccounts = mysqlTable(
-  "connected_accounts",
-  {
-    memberId: varchar("member_id", { length: 20 }).notNull(),
-    serverId: varchar("server_id", { length: 20 })
-      .references(() => servers.id, { onDelete: "cascade" })
-      .notNull()
-  },
-  (table) => {
-    return {
-      member_id_index : index("member_id_index").on(table.memberId),
-      connected_accounts_pk: primaryKey({ name: "connected_accounts_pk", columns: [table.serverId, table.memberId] })
-    };
-  }
-);
+export const connectedAccounts = mysqlTable("connected_accounts", {
+  id: varchar("id", { length: 41 }).primaryKey(), // serverId-userId
+  userId: varchar("user_id", { length: 20 }).notNull(),
+  serverId: varchar("server_id", { length: 20 })
+    .references(() => servers.id, { onDelete: "cascade" })
+    .notNull()
+});
 
 export const accountAddress = mysqlTable(
   "account_address",
   {
-    address: varchar("address", { length: 45 }).notNull(),
-    accountId: varchar("member_id", { length: 20 })
-      .references(() => connectedAccounts.memberId, { onDelete: "cascade" })
+    address: varchar("address", { length: 49 }).notNull(),
+    memberId: varchar("member_id", { length: 41 })
+      .references(() => connectedAccounts.id, { onDelete: "cascade" })
       .notNull()
   },
   (table) => {
     return {
-      account_address_pk: primaryKey({ name: "account_address_pk", columns: [table.accountId, table.address] })
+      account_address_pk: primaryKey({ name: "account_address_pk", columns: [table.memberId, table.address] })
     };
   }
 );

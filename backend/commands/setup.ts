@@ -7,9 +7,10 @@ import {
   ComponentType
 } from "discord.js";
 import { db, schema } from "../db";
-import { eq } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 import { setupGuild } from "../util/server";
 import { getToken } from "../util/api";
+import { map } from "remeda";
 
 export default {
   data: new SlashCommandBuilder()
@@ -48,12 +49,15 @@ export default {
     const collector = response.createMessageComponentCollector({ componentType: ComponentType.RoleSelect, time: 30_000 });
 
     collector.on("collect", async (i) => {
-      i.values.forEach(async (selection) => {
-        db.update(schema.serverTokenRoles)
-          .set({ serverId: interaction.guildId!, tokenId, roleId: selection })
-          .where(eq(schema.servers.id, i.guildId!))
-          .execute();
-      });
+      await db
+        .delete(schema.serverTokenRoles)
+        .where(and(eq(schema.serverTokenRoles.serverId, interaction.guildId!), eq(schema.serverTokenRoles.tokenId, tokenId)))
+        .execute();
+
+      await db
+        .insert(schema.serverTokenRoles)
+        .values(map(i.values, (r) => ({ serverId: interaction.guildId!, tokenId, roleId: r })))
+        .execute();
 
       await i.reply({ content: `Roles ${i.roles.map((m) => m).join(", ")} added to token ${tokenId}`, ephemeral: true });
     });
