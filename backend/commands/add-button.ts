@@ -48,7 +48,7 @@ export default {
       color: 0xffffff,
       timestamp: new Date(),
       image: {
-        url: "https://media0.giphy.com/media/W5C9c8nqoaDJWh34i6/giphy.gif"
+        url: "https://nft.production.enjinusercontent.com/uploads/files/jg8e8obginidns90.gif"
       }
     };
 
