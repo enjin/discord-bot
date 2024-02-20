@@ -1,6 +1,6 @@
 import { SlashCommandBuilder, PermissionFlagsBits, ChatInputCommandInteraction } from "discord.js";
 import { db, schema } from "../db";
-import { eq } from "drizzle-orm";
+import { eq, sql } from "drizzle-orm";
 
 export default {
   data: new SlashCommandBuilder()
@@ -26,14 +26,18 @@ export default {
       return interaction.reply({ content: "Please setup your server with /setup command", ephemeral: true });
     }
 
-    const roles = await db.select().from(schema.serverTokenRoles).where(eq(schema.serverTokenRoles.serverId, interaction.guildId!)).execute();
+    const tokenRoles = await db.select({
+      tokenId: schema.serverTokenRoles.tokenId,
+      roles: sql<string[]>`JSON_ARRAYAGG(${schema.serverTokenRoles.roleId}) as roles`
+    }).from(schema.serverTokenRoles).where(eq(schema.serverTokenRoles.serverId, interaction.guildId!)).groupBy(sql`${schema.serverTokenRoles.tokenId}`).execute();
 
-    if (roles.length === 0) {
+    if (tokenRoles.length === 0) {
       return interaction.reply({ content: "No roles configured.", ephemeral: true });
     }
+    
 
-    const message = roles.reduce((content, { roleId, tokenId }, index) => {
-      return content + `${index + 1}. ${tokenId} has roles ${roles.map((r) => interaction.guild?.roles.cache.get(roleId)).join(", ")}\n`;
+    const message = tokenRoles.reduce((content, { roles, tokenId }, index) => {
+      return content + `${index + 1}. ${tokenId} has roles ${roles.map((r) => interaction.guild?.roles.cache.get(r)).join(", ")}\n`;
     }, "");
 
     return interaction.reply({ content: message, ephemeral: true });

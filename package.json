@@ -19,6 +19,8 @@
   },
   "dependencies": {
     "@napi-rs/canvas": "^0.1.44",
+    "@polkadot/util": "^12.6.2",
+    "@polkadot/util-crypto": "^12.6.2",
     "@walletconnect/sign-client": "^2.11.0",
     "discord.js": "^14.14.1",
     "drizzle-orm": "^0.29.3",

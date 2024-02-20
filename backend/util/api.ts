@@ -1,3 +1,5 @@
+import { decodeAddress } from "@polkadot/util-crypto";
+import { u8aToHex } from "@polkadot/util/u8a/toHexBuffer";
 import config from "../config";
 
 const TOKEN_QUERY = `query GetToken($id: String!) {
@@ -11,7 +13,7 @@ const TOKEN_QUERY = `query GetToken($id: String!) {
 `;
 
 const TOKEN_ACCOUNT_TOKENS_QUERY = `query tokenAccountsOfTokens($tokens: [String!], $addresses: [String!]) {
-    result: tokenAccounts(where: {token: {id_in: $tokens}, account:{ address_in: $addresses}}, orderBy: id_ASC) {
+    result: tokenAccounts(where: {token: {id_in: $tokens}, account:{ id_in: $addresses}}, orderBy: id_ASC) {
       token{
         id
       }
@@ -48,7 +50,7 @@ export async function tokenAccountsOfTokens(tokens: string[], addresses: string[
     },
     body: JSON.stringify({
       query: TOKEN_ACCOUNT_TOKENS_QUERY,
-      variables: { tokens, addresses }
+      variables: { tokens, addresses: addresses.map((a) => u8aToHex(decodeAddress(a))) }
     })
   });
 

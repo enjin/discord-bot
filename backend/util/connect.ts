@@ -4,13 +4,13 @@ import config from "../config";
 import { tokenAccountsOfTokens } from "./api";
 import { db, schema } from "../db";
 import { eq, sql } from "drizzle-orm";
-import { pipe, map, uniqBy, filter, flatten, mapToObj, uniq } from "remeda";
+import { pipe, map, uniqBy, filter, flatten, uniq } from "remeda";
 
 export const handleConnectButton = async (interaction: ButtonInteraction) => {
-  const { attachment, approval } = await connectToWC();
+  const { attachment, approval, verifyAddress } = await connectToWC();
 
   const reply = await interaction.reply({
-    content: "Please scan the QR code with Enjin Wallet to connect your wallet to the bot.",
+    content: "Scan this QR using your Enjin Blockchain Wallet",
     ephemeral: true,
     files: [attachment]
   });
@@ -77,18 +77,40 @@ export const handleConnectButton = async (interaction: ButtonInteraction) => {
         flatten()
       );
 
-      try {
-        if (totalRoles.length === 0) {
-          return interaction.followUp({ content: "No roles to assign.", ephemeral: true });
-        }
+      if (totalRoles.length === 0) {
+        return interaction.followUp({ content: "No roles to assign.", ephemeral: true });
+      }
 
+      // wait 2 seconds, for wallet to get ready.
+      await new Promise((r) => setTimeout(r, 2_000));
+
+      await interaction.followUp({ content: "⏳ Please sign a message to verify your identity.", ephemeral: true });
+      try {
+        for (const account of accounts) {
+          const isValid = await verifyAddress(account, session);
+          if (!isValid) {
+            throw new Error("Invalid signature.");
+          }
+        }
+      } catch (error) {
+        console.error(error);
+
+        return interaction.followUp({ content: `❌ Can not verify address. ${error}`, ephemeral: true });
+      }
+
+      try {
         if (interaction.member && interaction.member.roles instanceof GuildMemberRoleManager) {
           // refresh cache
           await interaction.guild!.members.fetch({ user: interaction.user });
+
+          // remove all roles
           await interaction.member.roles.remove(uniqueRolesAcrossTokens);
+
+          // add roles
           await interaction.member.roles.add(totalRoles);
 
-          console.log(accounts);
+          // remove all addresses from db
+          await db.delete(schema.accountAddress).where(eq(schema.accountAddress.memberId, `${interaction.guild!.id}-${interaction.member!.user.id}`));
 
           // save addresses to db
           await db.insert(schema.accountAddress).values(
@@ -99,7 +121,7 @@ export const handleConnectButton = async (interaction: ButtonInteraction) => {
           );
 
           await interaction.client.users.send(interaction.member.user.id, {
-            content: `You have been given ${totalRoles.join(", ")} roles in ${interaction.guild!.name}.`
+            content: `You have been given ${totalRoles.map((role) => role.name).join(", ")} roles in ${interaction.guild!.name}.`
           });
         }
       } catch (error) {

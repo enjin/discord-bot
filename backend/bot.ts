@@ -1,4 +1,4 @@
-import { Client, Events, GatewayIntentBits } from "discord.js";
+import { Client, Events, GatewayIntentBits, GuildMemberRoleManager } from "discord.js";
 import { commandCollection } from "./commands";
 import config from "./config";
 import { removeGuild, setupGuild } from "./util/server";
@@ -35,15 +35,15 @@ client.on(Events.InteractionCreate, async (interaction) => {
   try {
     if (interaction.isChatInputCommand()) {
       const command = commandCollection.get(interaction.commandName);
+
       if (command) {
         await command.handler(interaction);
       }
     }
 
     if (interaction.isButton()) {
-      if(interaction.customId === 'connect-wallet'){  
-        await handleConnectButton(interaction)
-
+      if (interaction.customId === "connect-wallet") {
+        await handleConnectButton(interaction);
       }
     }
   } catch (error) {
