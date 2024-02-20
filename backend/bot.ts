@@ -2,7 +2,7 @@ import { Client, Events, GatewayIntentBits, GuildMemberRoleManager } from "disco
 import { commandCollection } from "./commands";
 import config from "./config";
 import { removeGuild, setupGuild } from "./util/server";
-import { handleConnectButton } from "./util/connect";
+import buttonInteractions from "@/interactions/buttons";
 
 const client = new Client({
   intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMessages, GatewayIntentBits.GuildModeration, GatewayIntentBits.GuildMessages]
@@ -42,9 +42,7 @@ client.on(Events.InteractionCreate, async (interaction) => {
     }
 
     if (interaction.isButton()) {
-      if (interaction.customId === "connect-wallet") {
-        await handleConnectButton(interaction);
-      }
+      await buttonInteractions[interaction.customId as keyof typeof buttonInteractions](interaction);
     }
   } catch (error) {
     console.error(error, interaction.guildId);

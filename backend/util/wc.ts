@@ -43,9 +43,7 @@ export const connectToWC = async () => {
 
 export const verifyAddress = (client: Awaited<ReturnType<typeof getClient>>) => {
   return async (address: string, session: SessionTypes.Struct) => {
-    const message = `Verify your address ${address}, by signing this message.`;
-
-    console.log('topic', session.topic, address);
+    const message = `Please confirm your address ${address} by signing this message.`;
     
     const result = await client!.request<{ signature: string }>({
       chainId: config.wcNamespace,

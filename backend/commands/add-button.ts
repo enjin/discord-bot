@@ -9,6 +9,7 @@ import {
 } from "discord.js";
 import { db, schema } from "../db";
 import { eq } from "drizzle-orm";
+import buttonInteractions from "@/interactions/buttons";
 
 export default {
   data: new SlashCommandBuilder()
@@ -51,9 +52,11 @@ export default {
       }
     };
 
+    const buttonId: keyof typeof buttonInteractions = 'connectWallet'
+
     const embedBuilder = new EmbedBuilder(embed);
 
-    const connect = new ButtonBuilder().setCustomId("connect-wallet").setLabel("Connect to Wallet").setStyle(ButtonStyle.Primary);
+    const connect = new ButtonBuilder().setCustomId(buttonId).setLabel("Connect to Wallet").setStyle(ButtonStyle.Primary);
 
     const row = new ActionRowBuilder<ButtonBuilder>().addComponents(connect);
 
