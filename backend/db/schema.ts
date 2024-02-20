@@ -3,7 +3,6 @@ import { int, mysqlTable, varchar, text, timestamp, primaryKey, unique, index } 
 export const servers = mysqlTable("servers", {
   id: varchar("id", { length: 20 }).primaryKey(), // guildId
   name: text("name"),
-  email: text("email"),
   connectedAt: timestamp("connected_at").defaultNow(),
   version: int("version").notNull()
 });
