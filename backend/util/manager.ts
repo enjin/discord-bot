@@ -18,8 +18,6 @@ export default async function manageUserRoles(client: Client, serverId: string, 
       }
     }
 
-    console.log("Processing roles for", guild.name, memberId);
-
     const member = await guild.members.fetch({
       user: memberId,
       force: true

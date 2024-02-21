@@ -130,8 +130,6 @@ export const connectWallet = async (interaction: ButtonInteraction) => {
 
         await interaction.followUp({ content: "✅ Wallet connected successfully.", ephemeral: true });
 
-        console.log(uniqBy(filteredResult, (r) => r.token.id)[0].token.metadata);
-
         const embed: EmbedData = {
           title: `You have successfully linked your wallet to ${interaction.guild!.name}`,
           color: 0x7567ce,
