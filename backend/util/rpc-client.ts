@@ -6,7 +6,7 @@ let client: ApiPromise;
 export async function getRpcApi() {
   if (!client) {
     client = await ApiPromise.create({
-      provider: new WsProvider(config.rpcUrl)
+      provider: new WsProvider(config.rpcUrl, 2000)
     });
   }
 
