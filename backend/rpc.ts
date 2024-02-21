@@ -1,4 +1,3 @@
-import { ApiPromise, WsProvider } from "@polkadot/api";
 import config from "@/config";
 import { db, schema } from "@/db";
 import { eq } from "drizzle-orm";
@@ -7,6 +6,11 @@ import { client } from "@/bot";
 import { getRpcApi } from "@/util/rpc-client";
 
 async function dispatchToManager(address: string) {
+  if (config.indexerUrl) {
+    // delay for 30 seconds.
+    // This is to ensure that the indexer has indexed the transaction before we query the database.
+    await new Promise((resolve) => setTimeout(resolve, 30000));
+  }
   const accounts = await db.select().from(schema.accountAddress).where(eq(schema.accountAddress.address, address));
 
   for (const account of accounts) {
