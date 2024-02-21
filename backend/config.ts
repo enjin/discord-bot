@@ -6,7 +6,8 @@ const envSchema = z.object({
   clientId: z.string(),
   wcNamespace: z.string().trim(),
   guildId: z.string().optional(),
-  dbUrl: z.string()
+  dbUrl: z.string(),
+  rpcUrl: z.string().url().trim()
 });
 
 
@@ -16,5 +17,6 @@ export default envSchema.parse({
   clientId: process.env.CLIENT_ID,
   guildId: process.env.GUILD_ID,
   wcNamespace: process.env.WC_NAMESPACE,
+  rpcUrl: process.env.RPC_URL,
   dbUrl: process.env.DB_URL
 });

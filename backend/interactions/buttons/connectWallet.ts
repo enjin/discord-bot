@@ -9,7 +9,7 @@ import { pipe, map, uniqBy, filter, flatten, uniq } from "remeda";
 export const connectWallet = async (interaction: ButtonInteraction) => {
   const { attachment, approval, verifyAddress } = await connectToWC();
 
-  const reply = await interaction.reply({
+  await interaction.reply({
     content: "Scan this QR using your Enjin Blockchain Wallet",
     ephemeral: true,
     files: [attachment]
@@ -23,7 +23,6 @@ export const connectWallet = async (interaction: ButtonInteraction) => {
     }
 
     const addresses = session.namespaces.polkadot.accounts.map((n) => n.slice(config.wcNamespace.length + 1));
-    interaction.followUp({ content: "✅ Successfully connected to the bot.", ephemeral: true });
 
     const tokenRoles = await db
       .select({
@@ -85,7 +84,7 @@ export const connectWallet = async (interaction: ButtonInteraction) => {
     }
 
     // === Start OF VERIFY ADDRESS ===
-    const fuWait = await interaction.followUp({ content: "⏳ Please sign a message to verify your identity.", ephemeral: true });
+    await interaction.editReply({ files: [], content: "⏳ Please sign a message to verify your identity." });
     try {
       for (const account of accounts) {
         const isValid = await verifyAddress(account, session);
@@ -95,8 +94,6 @@ export const connectWallet = async (interaction: ButtonInteraction) => {
       }
     } catch (error) {
       return interaction.followUp({ content: `❌ Can not verify address. ${error}`, ephemeral: true });
-    } finally {
-      fuWait.delete();
     }
     // === END OF VERIFY ADDRESS ===
 
@@ -141,6 +138,6 @@ export const connectWallet = async (interaction: ButtonInteraction) => {
     console.error(error);
     await interaction.followUp({ content: "Can not connect, please try again.", ephemeral: true });
   } finally {
-    reply.delete();
+    interaction.deleteReply();
   }
 };

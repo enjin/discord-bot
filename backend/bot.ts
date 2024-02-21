@@ -14,7 +14,7 @@ client.on(Events.ClientReady, () => {
 });
 
 client.on(Events.Error, (error) => {
-  console.error(error);
+  console.error("global:error", error);
 });
 
 client.on(Events.ShardError, (error) => {

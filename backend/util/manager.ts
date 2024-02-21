@@ -1,7 +1,7 @@
-import { EmbedBuilder, type Client, type Guild, type GuildMemberRoleManager, type Role, type EmbedData, Collection } from "discord.js";
+import { EmbedBuilder, type Client, type Guild, PermissionFlagsBits, type Role, type EmbedData, Collection } from "discord.js";
 import { db, schema } from "@/db";
 import { eq } from "drizzle-orm";
-import { filter, map, pipe, uniqBy, flatten, reduce } from "remeda";
+import { filter, map, pipe, uniqBy, flatten, reduce, difference, concat } from "remeda";
 import { tokenAccountsOfTokens } from "@/util/api";
 
 export default async function manageUserRoles(client: Client, serverId: string, memberId: string) {
@@ -17,9 +17,18 @@ export default async function manageUserRoles(client: Client, serverId: string, 
     }
   }
 
-  const member = guild.members.cache.find((member) => member.user.id === memberId);
+  console.log("Processing roles for", guild.name, memberId);
+
+  const member = await guild.members.fetch({
+    user: memberId,
+    force: true
+  });
+
+  // If the member is still not found, throw an error
   if (!member) {
     throw new Error("Member not found");
+
+    //TODO: remove the connected account from the database
   }
 
   const serverRoles = await db.select().from(schema.serverTokenRoles).where(eq(schema.serverTokenRoles.serverId, serverId));
@@ -66,25 +75,36 @@ export default async function manageUserRoles(client: Client, serverId: string, 
   const rolesToRemove = alreadyAssigned.filter((role) => !toBeAssigned.has(role.id));
   const rolesToAdd = toBeAssigned.filter((role) => !alreadyAssigned.has(role.id));
 
-  console.log("Roles to remove", rolesToRemove);
-  console.log("Roles to add", rolesToAdd);
+  if (rolesToAdd.size === 0 && rolesToRemove.size === 0) {
+    return;
+  }
 
-  const roleManager = member.roles;
-  await roleManager.remove(rolesToRemove);
-  await roleManager.add(rolesToAdd);
+  const updatedRoles = pipe(
+    member.roles.cache.map((r) => r.id),
+    difference(rolesToRemove.map((r) => r.id)),
+    concat(rolesToAdd.map((r) => r.id))
+  );
+
+  await member.roles.set(updatedRoles);
+
+  if (member.permissions.has(PermissionFlagsBits.Administrator)) {
+    // If the member has administrator permission, do not send a DM to avoid spamming
+    return;
+  }
 
   const embed: EmbedData = {
     title: `Your roles have been updated in ${guild.name}`,
-    color: 0xffffff,
-    timestamp: new Date(),
+    color: 0x7567ce,
     fields: [
       {
         name: "The following roles have been removed:",
-        value: rolesToRemove.size !== 0 ? rolesToRemove.map((r) => `<@&${r}>`).join(", ") : "None"
+        value: rolesToRemove.size !== 0 ? rolesToRemove.map((r) => r.name).join(", ") : "None",
+        inline: false
       },
       {
         name: "The following roles have been added:",
-        value: rolesToAdd.size !== 0 ? rolesToAdd.map((r) => `<@&${r}>`).join(", ") : "None"
+        value: rolesToAdd.size !== 0 ? rolesToAdd.map((r) => r.name).join(", ") : "None",
+        inline: false
       }
     ]
   };

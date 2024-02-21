@@ -46,13 +46,12 @@ export default {
       title: "Connect to Enjin Wallet",
       description: description ?? undefined,
       color: 0xffffff,
-      timestamp: new Date(),
       image: {
         url: "https://nft.production.enjinusercontent.com/uploads/files/jg8e8obginidns90.gif"
       }
     };
 
-    const buttonId: keyof typeof buttonInteractions = 'connectWallet'
+    const buttonId: keyof typeof buttonInteractions = "connectWallet";
 
     const embedBuilder = new EmbedBuilder(embed);
 
@@ -62,6 +61,10 @@ export default {
 
     await interaction.channel.send({ embeds: [embedBuilder], components: [row] });
 
-    return interaction.reply({ content: "Button added", ephemeral: true });
+    await interaction.reply({ content: "Button added", ephemeral: true });
+
+    setTimeout(() => {
+      interaction.deleteReply();
+    }, 2000);
   }
 };
