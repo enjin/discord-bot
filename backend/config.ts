@@ -11,9 +11,9 @@ const envSchema = z.object({
 
 
 export default envSchema.parse({
-  botToken: process.env.BOT_TOKEN,
+  botToken: process.env.DISCORD_BOT_TOKEN,
   indexerUrl: process.env.INDEXER_URL,
-  clientId: process.env.CLIENT_ID,
+  clientId: process.env.DISOCRD_APPLICATION_ID,
   wcNamespace: process.env.WC_NAMESPACE,
   rpcUrl: process.env.RPC_URL,
   dbUrl: process.env.DB_URL
