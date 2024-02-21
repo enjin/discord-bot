@@ -42,7 +42,7 @@ export default {
 
     const response = await interaction.reply({
       components: [row],
-      content: `Please select a roles for ${tokenId} (${token.metadata.name})`,
+      content: `Please select a roles for ${tokenId}` + token.metadata ? `(${token.metadata.name})` : "",
       ephemeral: true
     });
 

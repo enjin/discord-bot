@@ -4,6 +4,7 @@ import { db, schema } from "@/db";
 import { eq } from "drizzle-orm";
 import manageUserRoles from "@/util/manager";
 import { client } from "@/bot";
+import { getRpcApi } from "@/util/rpc-client";
 
 async function dispatchToManager(address: string) {
   const accounts = await db.select().from(schema.accountAddress).where(eq(schema.accountAddress.address, address));
@@ -15,9 +16,7 @@ async function dispatchToManager(address: string) {
 }
 
 async function main() {
-  const api = await ApiPromise.create({
-    provider: new WsProvider(config.rpcUrl)
-  });
+  const api = await getRpcApi();
 
   api.query.system.events((events: any[]) => {
     events.forEach((record) => {
