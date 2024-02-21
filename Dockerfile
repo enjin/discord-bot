@@ -5,8 +5,8 @@ WORKDIR /app
 # this will cache them and speed up future builds
 FROM base AS install
 RUN mkdir -p /temp/dev
-COPY package.json bun.lockb /temp/dev/
-RUN cd /temp/dev && bun install --frozen-lockfile
+COPY package.json /temp/dev/
+RUN cd /temp/dev && bun install 
 
 RUN mkdir -p /temp/prod
 COPY package.json bun.lockb /temp/prod/

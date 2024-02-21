@@ -28,7 +28,7 @@ client.on(Events.GuildCreate, async (guild) => {
 
 client.on(Events.GuildDelete, async (guild) => {
   removeGuild(guild.id);
-  console.log(`removed ${guild.name}`);
+  console.log(`Removed ${guild.name}`);
 });
 
 client.on(Events.InteractionCreate, async (interaction) => {
