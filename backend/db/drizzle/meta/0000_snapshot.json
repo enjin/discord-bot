@@ -1,7 +1,7 @@
 {
   "version": "5",
   "dialect": "mysql",
-  "id": "6ec44eb0-b1fc-4225-b9e8-e5f35dde9450",
+  "id": "22ee9a12-9e80-4da9-93e0-9cb767da2ba8",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "tables": {
     "account_address": {
@@ -9,14 +9,14 @@
       "columns": {
         "address": {
           "name": "address",
-          "type": "varchar(45)",
+          "type": "varchar(49)",
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false
         },
         "member_id": {
           "name": "member_id",
-          "type": "varchar(20)",
+          "type": "varchar(41)",
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false
@@ -165,13 +165,6 @@
         },
         "name": {
           "name": "name",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
-        },
-        "email": {
-          "name": "email",
           "type": "text",
           "primaryKey": false,
           "notNull": false,

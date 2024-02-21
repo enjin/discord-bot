@@ -5,22 +5,8 @@
     {
       "idx": 0,
       "version": "5",
-      "when": 1707607138091,
-      "tag": "0000_rare_mephisto",
-      "breakpoints": true
-    },
-    {
-      "idx": 1,
-      "version": "5",
-      "when": 1707607676067,
-      "tag": "0001_living_madripoor",
-      "breakpoints": true
-    },
-    {
-      "idx": 2,
-      "version": "5",
-      "when": 1707607736842,
-      "tag": "0002_skinny_hellfire_club",
+      "when": 1708524254264,
+      "tag": "0000_dapper_preak",
       "breakpoints": true
     }
   ]

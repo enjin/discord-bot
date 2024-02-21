@@ -1,6 +1,6 @@
 CREATE TABLE `account_address` (
-	`address` varchar(45) NOT NULL,
-	`member_id` varchar(20) NOT NULL,
+	`address` varchar(49) NOT NULL,
+	`member_id` varchar(41) NOT NULL,
 	CONSTRAINT `account_address_pk` PRIMARY KEY(`member_id`,`address`)
 );
 --> statement-breakpoint
@@ -21,7 +21,6 @@ CREATE TABLE `server_token_roles` (
 CREATE TABLE `servers` (
 	`id` varchar(20) NOT NULL,
 	`name` text,
-	`email` text,
 	`connected_at` timestamp DEFAULT (now()),
 	`version` int NOT NULL,
 	CONSTRAINT `servers_id` PRIMARY KEY(`id`)

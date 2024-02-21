@@ -1,1 +1,0 @@
-ALTER TABLE `account_address` MODIFY COLUMN `member_id` varchar(41) NOT NULL;
