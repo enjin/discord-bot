@@ -5,7 +5,8 @@ import {
   EmbedBuilder,
   ButtonBuilder,
   ButtonStyle,
-  ActionRowBuilder
+  ActionRowBuilder,
+  RESTJSONErrorCodes
 } from "discord.js";
 import { db, schema } from "../db";
 import { eq } from "drizzle-orm";
@@ -55,13 +56,23 @@ export default {
 
     const embedBuilder = new EmbedBuilder(embed);
 
-    const connect = new ButtonBuilder().setCustomId(buttonId).setLabel("Connect to Wallet").setStyle(ButtonStyle.Primary);
+    const connect = new ButtonBuilder().setCustomId(buttonId).setLabel("Click Here").setStyle(ButtonStyle.Primary);
 
     const row = new ActionRowBuilder<ButtonBuilder>().addComponents(connect);
 
-    await interaction.channel.send({ embeds: [embedBuilder], components: [row] });
-
-    await interaction.reply({ content: "Button added", ephemeral: true });
+    try {
+      await interaction.channel.send({ embeds: [embedBuilder], components: [row] });
+      await interaction.reply({ content: "Button added", ephemeral: true });
+    } catch (error: any) {
+      if (error.code === RESTJSONErrorCodes.MissingAccess) {
+        return interaction.reply({
+          content: `Hey ${interaction.member.user.username}, This channel is set to private, and I'm unable to send messages here without the necessary permissions. \nCould you please add my role to the channel permissions and then try again?`,
+          ephemeral: true
+        });
+      } else {
+        return interaction.reply({ content: "Can not add button", ephemeral: true });
+      }
+    }
 
     setTimeout(() => {
       interaction.deleteReply();
