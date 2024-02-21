@@ -18,6 +18,9 @@ const TOKEN_ACCOUNT_TOKENS_QUERY = `query tokenAccountsOfTokens($tokens: [String
     result: tokenAccounts(where: {token: {id_in: $tokens}, account:{ id_in: $addresses}}, orderBy: id_ASC) {
       token{
         id
+        metadata {
+          name
+        }
       }
       account{
         address

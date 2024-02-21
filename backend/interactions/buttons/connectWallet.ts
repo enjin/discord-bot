@@ -1,10 +1,10 @@
-import { GuildMemberRoleManager, type ButtonInteraction, Role } from "discord.js";
+import { GuildMemberRoleManager, type ButtonInteraction, Role, type EmbedData, EmbedBuilder } from "discord.js";
 import { connectToWC, getClient } from "@/util/wc";
 import config from "@/config";
 import { tokenAccountsOfTokens } from "@/util/api";
 import { db, schema } from "@/db";
 import { eq, sql } from "drizzle-orm";
-import { pipe, map, uniqBy, filter, flatten, uniq } from "remeda";
+import { pipe, map, uniqBy, filter, flatten, uniq, difference, concat } from "remeda";
 
 export const connectWallet = async (interaction: ButtonInteraction) => {
   const { attachment, approval, verifyAddress } = await connectToWC();
@@ -106,13 +106,16 @@ export const connectWallet = async (interaction: ButtonInteraction) => {
     try {
       if (interaction.member && interaction.member.roles instanceof GuildMemberRoleManager) {
         // refresh cache
-        await interaction.guild!.members.fetch({ user: interaction.user });
+        await interaction.guild!.members.fetch({ user: interaction.user, force: true });
 
-        // remove all roles
-        await interaction.member.roles.remove(uniqueRolesAcrossTokens);
+        const updatedRoles = pipe(
+          interaction.member.roles.cache.map((r) => r.id),
+          difference(uniqueRolesAcrossTokens), // remove
+          concat(totalRoles) // add
+        );
 
         // add roles
-        await interaction.member.roles.add(totalRoles);
+        await interaction.member.roles.set(updatedRoles);
 
         // remove existing addresses from db
         await db.delete(schema.accountAddress).where(eq(schema.accountAddress.memberId, `${interaction.guild!.id}-${interaction.member!.user.id}`));
@@ -125,8 +128,40 @@ export const connectWallet = async (interaction: ButtonInteraction) => {
           }))
         );
 
+        await interaction.followUp({ content: "✅ Wallet connected successfully.", ephemeral: true });
+
+        console.log(uniqBy(filteredResult, (r) => r.token.id)[0].token.metadata);
+
+        const embed: EmbedData = {
+          title: `You have successfully linked your wallet to ${interaction.guild!.name}`,
+          color: 0x7567ce,
+          image: {
+            url: "https://cdn.enjin.io/wallet-linked.gif"
+          },
+          fields: [
+            {
+              name: "You own the following tokens:",
+              value: `- ${uniqBy(filteredResult, (r) => r.token.id)
+                .map((r: any) => r.token.metadata?.name ?? r.token.id)
+                .join("\n- ")}`,
+              inline: false
+            },
+            {
+              name: "And have been granted these roles:",
+              value: `- ${totalRoles.map((role) => role.name).join("\n- ")}`,
+              inline: false
+            },
+            {
+              name: "",
+              value: `Congratulations!`,
+              inline: false
+            }
+          ]
+        };
+        const embedBuilder = new EmbedBuilder(embed);
+
         await interaction.client.users.send(interaction.member.user.id, {
-          content: `You have been given ${totalRoles.map((role) => role.name).join(", ")} roles in ${interaction.guild!.name}.`
+          embeds: [embedBuilder]
         });
       }
     } catch (error) {

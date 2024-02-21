@@ -47,7 +47,7 @@ export default {
       description: description ?? undefined,
       color: 0xffffff,
       image: {
-        url: "https://nft.production.enjinusercontent.com/uploads/files/jg8e8obginidns90.gif"
+        url: "https://cdn.enjin.io/wallet-connect.gif"
       }
     };
 

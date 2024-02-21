@@ -17,7 +17,7 @@ async function handle() {
 
 // This is a fail safe, in ideal case, the rpc event will evaluate accounts in real time.
 CronJob.from({
-  cronTime: "*/10 * * * * *", // every day at midnight
+  cronTime: "0 0 * * *", // every day at midnight
   onTick: function () {
     handle();
   },

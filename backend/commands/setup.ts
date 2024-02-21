@@ -49,6 +49,12 @@ export default {
     const collector = response.createMessageComponentCollector({ componentType: ComponentType.RoleSelect, time: 30_000 });
 
     collector.on("collect", async (i) => {
+      if (i.roles.some((r) => r.managed)) {
+        i.reply({ content: "You cannot select managed roles", ephemeral: true });
+        interaction.deleteReply();
+        return;
+      }
+
       await db
         .delete(schema.serverTokenRoles)
         .where(and(eq(schema.serverTokenRoles.serverId, interaction.guildId!), eq(schema.serverTokenRoles.tokenId, tokenId)))
@@ -60,6 +66,8 @@ export default {
         .execute();
 
       await i.reply({ content: `Roles ${i.roles.map((m) => m).join(", ")} added to token ${tokenId}`, ephemeral: true });
+      interaction.deleteReply();
+      return;
     });
   }
 };
