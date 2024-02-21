@@ -1,0 +1,34 @@
+{
+  "name": "discord-bot",
+  "module": "index.ts",
+  "type": "module",
+  "scripts": {
+    "build": "rm -rf dist && bun build --target=bun --root . backend/index.ts --outdir=dist",
+    "dev": "bun run backend/index.ts",
+    "db:push": "bun run drizzle-kit push:mysql --config backend/db/drizzle.config.ts",
+    "db:generate": "bun run drizzle-kit generate:mysql --config backend/db/drizzle.config.ts",
+    "db:migrate": "bun run backend/db/migrate.ts"
+  },
+  "devDependencies": {
+    "@types/bun": "latest",
+    "@types/qrcode": "^1.5.5",
+    "drizzle-kit": "^0.20.13"
+  },
+  "peerDependencies": {
+    "typescript": "^5.0.0"
+  },
+  "dependencies": {
+    "@napi-rs/canvas": "^0.1.44",
+    "@polkadot/api": "^10.11.2",
+    "@polkadot/util": "^12.6.2",
+    "@polkadot/util-crypto": "^12.6.2",
+    "@walletconnect/sign-client": "^2.11.0",
+    "cron": "^3.1.6",
+    "discord.js": "^14.14.1",
+    "drizzle-orm": "^0.29.3",
+    "mysql2": "^3.9.1",
+    "qrcode": "^1.5.3",
+    "remeda": "^1.40.1",
+    "zod": "^3.22.4"
+  }
+}

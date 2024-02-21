@@ -1,0 +1,13 @@
+{
+  "version": "5",
+  "dialect": "mysql",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "5",
+      "when": 1708524254264,
+      "tag": "0000_dapper_preak",
+      "breakpoints": true
+    }
+  ]
+}

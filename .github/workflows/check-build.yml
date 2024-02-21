@@ -1,0 +1,19 @@
+name: check-build
+
+on:
+  push:
+    branches: [master]
+
+  pull_request:
+    branches: [master]
+
+jobs:
+  check-build:
+    name: check-build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: oven-sh/setup-bun@v1
+
+      - run: bun install --frozen-lockfile
+      - run: bun run build
