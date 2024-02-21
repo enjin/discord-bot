@@ -70,7 +70,7 @@ To self-host this bot, follow the steps below:
 5. **Run without Docker:**
     - If you prefer to run the bot without Docker, you can do so by running the following command:
       ```
-      bun add
+      bun install
       bun dev
       ```
       Ensure that you have [Bun](https://bun.sh/) installed on your machine.
