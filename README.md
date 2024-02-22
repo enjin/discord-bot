@@ -43,12 +43,21 @@ To self-host this bot, follow the steps below:
    - Discord Bot Token: Obtain a Discord bot token by creating a new bot in your Discord Developer application.
 
 2. **Create Docker Image:**
+
+   #### Create Docker Image
    - Clone the Enjin Discord Bot repository from [https://github.com/enjin/discord-bot/](https://github.com/enjin/discord-bot/).
    - Navigate to the cloned repository directory.
    - Build the Docker image using the following command:
      ```
-     docker build -t enjin-discord-bot .
+     docker build -t enjin/discord-bot .
      ```
+
+   #### Pull Docker Image
+   - Alternatively, you can pull the Docker image from the Enjin Docker Hub using the following command:
+     ```
+     docker pull enjin/discord-bot:latest
+     ```
+   
 
 3. **Set Environment Variables:**
    - Create a `.env` file in the cloned repository directory.
@@ -64,7 +73,7 @@ To self-host this bot, follow the steps below:
 4. **Run the Bot:**
    - Start the bot using the following command:
      ```
-     docker run --env-file .env enjin-discord-bot
+     docker run --env-file .env enjin/discord-bot
      ```
 
 5. **Run without Docker:**
