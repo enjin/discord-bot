@@ -9,10 +9,6 @@ on:
     tags:
       - "v*"
 
-env:
-  REGISTRY: ghcr.io
-  IMAGE_NAME: ""
-
 jobs:
   docker:
     runs-on: ubuntu-latest
