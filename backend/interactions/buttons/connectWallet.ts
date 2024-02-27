@@ -72,8 +72,8 @@ export const connectWallet = async (interaction: ButtonInteraction) => {
       map((r) => r.role)
     );
 
-    const totalRoles: Role[] = [];
-    const accountsToVerify: string[] = [];
+    let totalRoles: Role[] = [];
+    let accountsToVerify: string[] = [];
     const embedResultField: APIEmbedField[] = [];
 
     // handle token roles
@@ -81,7 +81,7 @@ export const connectWallet = async (interaction: ButtonInteraction) => {
       const result = await tokenAccountsOfTokens(tokens, addresses);
       const filteredResult = filter(result, (r: any) => parseInt(r.totalBalance, 10) > 0);
 
-      accountsToVerify.concat(
+      accountsToVerify = accountsToVerify.concat(
         pipe(
           filteredResult,
           map((r: any) => r.account.address as string),
@@ -89,7 +89,7 @@ export const connectWallet = async (interaction: ButtonInteraction) => {
         )
       );
 
-      totalRoles.concat(
+      totalRoles = totalRoles.concat(
         pipe(
           filteredResult,
           map((r: any) =>
@@ -117,7 +117,7 @@ export const connectWallet = async (interaction: ButtonInteraction) => {
       const result = await collectionAccountsOfCollections(collections, addresses);
       const filteredResult = filter(result, (r: any) => parseInt(r.accountCount, 10) > 0);
 
-      accountsToVerify.concat(
+      accountsToVerify = accountsToVerify.concat(
         pipe(
           filteredResult,
           map((r: any) => r.account.address as string),
@@ -125,7 +125,7 @@ export const connectWallet = async (interaction: ButtonInteraction) => {
         )
       );
 
-      totalRoles.concat(
+      totalRoles = totalRoles.concat(
         pipe(
           filteredResult,
           map((r: any) =>

@@ -148,7 +148,7 @@ export async function collectionAccountsOfCollections(collections: string[], add
         variables: { collections, addresses: addresses.map((a) => u8aToHex(decodeAddress(a))) }
       })
     });
-
+  
     const json = (await res.json()) as { data: { result: any[] } };
 
     return json.data.result;
