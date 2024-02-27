@@ -45,3 +45,19 @@ export const serverTokenRoles = mysqlTable(
     };
   }
 );
+
+export const serverCollectionRoles = mysqlTable(
+  "server_collection_roles",
+  {
+    serverId: varchar("server_id", { length: 20 })
+      .references(() => servers.id, { onDelete: "cascade" })
+      .notNull(),
+    collectionId: varchar("collection_id", { length: 255 }).notNull(),
+    roleId: varchar("role_id", { length: 20 }).notNull()
+  },
+  (table) => {
+    return {
+      unique: unique("server_collection_roles_unique").on(table.serverId, table.roleId, table.collectionId)
+    };
+  }
+);

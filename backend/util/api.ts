@@ -55,6 +55,36 @@ export async function getToken(id: string) {
   return data.toPrimitive();
 }
 
+export async function getCollection(id: string){
+  if (config.indexerUrl) {
+    const res = await fetch(config.indexerUrl, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        query: `query GetCollection($id: String!) {
+          result: collectionById(id: $id){
+            id
+            metadata { 
+              name
+            }
+          }
+        }`,
+        variables: { id }
+      })
+    });
+
+    const json = (await res.json()) as { data: { result: any | null } };
+
+    return json.data.result;
+  }
+  const api = await getRpcApi();
+  const data = await api.query.multiTokens.collections(id);
+
+  return data.toPrimitive();
+}
+
 export async function tokenAccountsOfTokens(tokens: string[], addresses: string[]) {
   if (config.indexerUrl) {
     const res = await fetch(config.indexerUrl, {
