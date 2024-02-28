@@ -10,10 +10,14 @@ export default async function manageUserRoles(client: Client, serverId: string, 
     guild = client.guilds.cache.get(serverId);
 
     if (!guild) {
-      guild = await client.guilds.fetch(serverId);
-
-      // If the guild is still not found, throw an error
-      if (!guild) {
+      try {
+        guild = await client.guilds.fetch(serverId);
+      } catch (error: any) {
+        if (error.code === 10004) {
+          // guild does not exist, that means the bot has been removed from the server
+          throw new Error(`Guild was removed from the server: ${serverId}`);
+        }
+        
         throw new Error("Guild not found");
       }
     }
@@ -132,7 +136,7 @@ export default async function manageUserRoles(client: Client, serverId: string, 
     const updatedRoles = pipe(
       member.roles.cache.map((r) => r.id),
       difference(uniqueRolesAcrossServer),
-      concat(tokenRoles.map((r) => r.role))
+      concat(totalRoles)
     );
 
     await member.roles.set(updatedRoles);
