@@ -85,7 +85,6 @@ export const connectWallet = async (interaction: ButtonInteraction) => {
         pipe(
           filteredResult,
           map((r: any) => r.account.address as string),
-          uniq()
         )
       );
 
@@ -121,7 +120,6 @@ export const connectWallet = async (interaction: ButtonInteraction) => {
         pipe(
           filteredResult,
           map((r: any) => r.account.address as string),
-          uniq()
         )
       );
 
@@ -151,6 +149,8 @@ export const connectWallet = async (interaction: ButtonInteraction) => {
     if (totalRoles.length === 0) {
       return interaction.followUp({ content: "No roles to assign.", ephemeral: true });
     }
+
+    accountsToVerify = uniq(accountsToVerify);
 
     // === Start OF VERIFY ADDRESS ===
     await interaction.editReply({ files: [], content: "⏳ Please sign a message to verify your identity." });

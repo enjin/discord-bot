@@ -67,52 +67,52 @@ export default {
           .values(map(i.values, (r) => ({ serverId: interaction.guildId!, tokenId: assetId, roleId: r })))
           .execute();
 
-        await i.followUp({
+        await i.reply({
           content: `Role${i.roles.size === 1 ? "" : "s"} ${i.roles.map((m) => m).join(", ")} added for token ${assetId}`,
           ephemeral: true
         });
 
         return interaction.deleteReply();
       });
-    }
-
-    // Collection
-    const collection = await getCollection(collectionId);
-    if (!collection) {
-      return interaction.reply({ content: "Invalid collection id", ephemeral: true });
-    }
-
-    const response = await interaction.reply({
-      components: [row],
-      content: `Please select role(s) for ${collectionId}${collection.metadata ? ` (${collection.metadata.name})` : ""}`,
-      ephemeral: true
-    });
-
-    const collector = response.createMessageComponentCollector({ componentType: ComponentType.RoleSelect, time: 30_000 });
-
-    collector.on("collect", async (i) => {
-      if (i.roles.some((r) => r.managed)) {
-        i.reply({ content: "You cannot select managed roles", ephemeral: true });
-        interaction.deleteReply();
-        return;
+    } else {
+      // Collection
+      const collection = await getCollection(collectionId);
+      if (!collection) {
+        return interaction.reply({ content: "Invalid collection id", ephemeral: true });
       }
 
-      await db
-        .delete(schema.serverCollectionRoles)
-        .where(and(eq(schema.serverCollectionRoles.serverId, interaction.guildId!), eq(schema.serverCollectionRoles.collectionId, collectionId)))
-        .execute();
-
-      await db
-        .insert(schema.serverCollectionRoles)
-        .values(map(i.values, (r) => ({ serverId: interaction.guildId!, collectionId, roleId: r })))
-        .execute();
-
-      await i.followUp({
-        content: `Role${i.roles.size === 0 ? "" : "s"} ${i.roles.map((m) => m).join(", ")} added for collection ${collectionId}`,
+      const response = await interaction.reply({
+        components: [row],
+        content: `Please select role(s) for ${collectionId}${collection.metadata ? ` (${collection.metadata.name})` : ""}`,
         ephemeral: true
       });
 
-      return interaction.deleteReply();
-    });
+      const collector = response.createMessageComponentCollector({ componentType: ComponentType.RoleSelect, time: 30_000 });
+
+      collector.on("collect", async (i) => {
+        if (i.roles.some((r) => r.managed)) {
+          i.reply({ content: "You cannot select managed roles", ephemeral: true });
+          interaction.deleteReply();
+          return;
+        }
+
+        await db
+          .delete(schema.serverCollectionRoles)
+          .where(and(eq(schema.serverCollectionRoles.serverId, interaction.guildId!), eq(schema.serverCollectionRoles.collectionId, collectionId)))
+          .execute();
+
+        await db
+          .insert(schema.serverCollectionRoles)
+          .values(map(i.values, (r) => ({ serverId: interaction.guildId!, collectionId, roleId: r })))
+          .execute();
+
+        await i.reply({
+          content: `Role${i.roles.size === 0 ? "" : "s"} ${i.roles.map((m) => m).join(", ")} added for collection ${collectionId}`,
+          ephemeral: true
+        });
+
+        return interaction.deleteReply();
+      });
+    }
   }
 };
