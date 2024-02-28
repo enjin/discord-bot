@@ -1,4 +1,4 @@
-import { EmbedBuilder, type Client, type Guild, PermissionFlagsBits, type Role, type EmbedData, Collection, type APIEmbedField } from "discord.js";
+import { EmbedBuilder, type Client, type Guild, type EmbedData } from "discord.js";
 import { db, schema } from "@/db";
 import { eq } from "drizzle-orm";
 import { filter, map, pipe, uniqBy, flatten, reduce, difference, concat, uniq, intersection } from "remeda";
@@ -118,10 +118,13 @@ export default async function manageUserRoles(client: Client, serverId: string, 
     }
 
     totalRoles = uniq(totalRoles);
-    const alreadyAssigned = intersection(uniqueRolesAcrossServer, member.roles.cache.map((r) => r.id));
+    const alreadyAssigned = intersection(
+      uniqueRolesAcrossServer,
+      member.roles.cache.map((r) => r.id)
+    );
     const rolesToAdd = difference(totalRoles, alreadyAssigned);
     const rolesToRemove = difference(alreadyAssigned, totalRoles);
-   
+
     if (rolesToAdd.length === 0 && rolesToRemove.length === 0) {
       return;
     }
@@ -129,7 +132,7 @@ export default async function manageUserRoles(client: Client, serverId: string, 
     const updatedRoles = pipe(
       member.roles.cache.map((r) => r.id),
       difference(uniqueRolesAcrossServer),
-      concat(tokenRoles.map((r) => r.role)),
+      concat(tokenRoles.map((r) => r.role))
     );
 
     await member.roles.set(updatedRoles);
