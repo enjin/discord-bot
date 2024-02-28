@@ -17,7 +17,7 @@ export default async function manageUserRoles(client: Client, serverId: string, 
           // guild does not exist, that means the bot has been removed from the server
           throw new Error(`Guild was removed from the server: ${serverId}`);
         }
-        
+
         throw new Error("Guild not found");
       }
     }
@@ -147,12 +147,12 @@ export default async function manageUserRoles(client: Client, serverId: string, 
       fields: [
         {
           name: "The following roles have been removed:",
-          value: rolesToRemove.length !== 0 ? rolesToRemove.map((r) => guild!.roles.cache.get(r)!.name).join(", ") : "None",
+          value: rolesToRemove.length !== 0 ? `- ${rolesToRemove.map((r) => guild!.roles.cache.get(r)!.name).join("\n- ")}` : "None",
           inline: false
         },
         {
           name: "The following roles have been added:",
-          value: rolesToAdd.length !== 0 ? rolesToAdd.map((r) => guild!.roles.cache.get(r)!.name).join(", ") : "None",
+          value: rolesToAdd.length !== 0 ? `- ${rolesToAdd.map((r) => guild!.roles.cache.get(r)!.name).join("\n- ")}` : "None",
           inline: false
         }
       ]
