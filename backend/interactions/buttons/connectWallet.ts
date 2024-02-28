@@ -180,7 +180,7 @@ export const connectWallet = async (interaction: ButtonInteraction) => {
         const updatedRoles = pipe(
           interaction.member.roles.cache.map((r) => r.id),
           difference(uniqueRolesAcrossServer), // remove
-          concat(totalRoles) // add
+          concat(uniqBy(totalRoles, (r) => r.id)) // add
         );
 
         // add roles
