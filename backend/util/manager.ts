@@ -1,8 +1,8 @@
-import { EmbedBuilder, type Client, type Guild, PermissionFlagsBits, type Role, type EmbedData, Collection } from "discord.js";
+import { EmbedBuilder, type Client, type Guild, type EmbedData } from "discord.js";
 import { db, schema } from "@/db";
 import { eq } from "drizzle-orm";
-import { filter, map, pipe, uniqBy, flatten, reduce, difference, concat } from "remeda";
-import { tokenAccountsOfTokens } from "@/util/api";
+import { filter, map, pipe, uniqBy, flatten, reduce, difference, concat, uniq, intersection } from "remeda";
+import { collectionAccountsOfCollections, tokenAccountsOfTokens } from "@/util/api";
 
 export default async function manageUserRoles(client: Client, serverId: string, memberId: string) {
   try {
@@ -10,10 +10,14 @@ export default async function manageUserRoles(client: Client, serverId: string, 
     guild = client.guilds.cache.get(serverId);
 
     if (!guild) {
-      guild = await client.guilds.fetch(serverId);
+      try {
+        guild = await client.guilds.fetch(serverId);
+      } catch (error: any) {
+        if (error.code === 10004) {
+          // guild does not exist, that means the bot has been removed from the server
+          throw new Error(`Guild was removed from the server: ${serverId}`);
+        }
 
-      // If the guild is still not found, throw an error
-      if (!guild) {
         throw new Error("Guild not found");
       }
     }
@@ -30,17 +34,38 @@ export default async function manageUserRoles(client: Client, serverId: string, 
       //TODO: remove the connected account from the database
     }
 
-    const serverRoles = await db.select().from(schema.serverTokenRoles).where(eq(schema.serverTokenRoles.serverId, serverId));
-    const uniqueRolesAcrossTokens = pipe(
-      serverRoles,
-      uniqBy((r) => r.roleId),
-      map((r) => r.roleId)
+    const tokenRoles = await db
+      .select({
+        role: schema.serverTokenRoles.roleId,
+        token: schema.serverTokenRoles.tokenId
+      })
+      .from(schema.serverTokenRoles)
+      .where(eq(schema.serverTokenRoles.serverId, serverId));
+
+    const collectionRoles = await db
+      .select({
+        role: schema.serverCollectionRoles.roleId,
+        collection: schema.serverCollectionRoles.collectionId
+      })
+      .from(schema.serverCollectionRoles)
+      .where(eq(schema.serverCollectionRoles.serverId, serverId));
+
+    const uniqueRolesAcrossServer = pipe(
+      concat(tokenRoles, collectionRoles),
+      uniqBy((r) => r.role),
+      map((r) => r.role)
     );
 
     const tokens = pipe(
-      serverRoles,
-      uniqBy((r) => r.tokenId),
-      map((r) => r.tokenId)
+      tokenRoles,
+      uniqBy((r) => r.token),
+      map((r) => r.token)
+    );
+
+    const collections = pipe(
+      collectionRoles,
+      uniqBy((r) => r.collection),
+      map((r) => r.collection)
     );
 
     const addresses = await db
@@ -50,38 +75,68 @@ export default async function manageUserRoles(client: Client, serverId: string, 
       .from(schema.accountAddress)
       .where(eq(schema.accountAddress.memberId, `${serverId}-${memberId}`));
 
-    const result = await tokenAccountsOfTokens(
-      tokens,
-      addresses.map((a) => a.address)
-    );
-    const accountsWithBalance = filter(result, (r: any) => parseInt(r.totalBalance, 10) > 0);
+    let totalRoles: string[] = [];
 
-    const toBeAssigned = pipe(
-      accountsWithBalance,
-      map((r: any) =>
+    if (tokenRoles.length !== 0) {
+      const result = await tokenAccountsOfTokens(
+        tokens,
+        addresses.map((a) => a.address)
+      );
+      const filteredResult = filter(result, (r: any) => parseInt(r.totalBalance, 10) > 0);
+
+      totalRoles = totalRoles.concat(
         pipe(
-          serverRoles,
-          filter((role) => role.tokenId === r.token.id),
-          map((r) => guild!.roles.cache.get(r.roleId) as Role)
+          filteredResult,
+          map((r: any) =>
+            pipe(
+              tokenRoles,
+              filter((role) => role.token === r.token.id),
+              map((r) => r.role)
+            )
+          ),
+          flatten()
         )
-      ),
-      flatten(),
-      reduce((collection, role) => collection.set(role.id, role), new Collection<string, Role>())
+      );
+    }
+
+    if (collectionRoles.length !== 0) {
+      const result = await collectionAccountsOfCollections(
+        collections,
+        addresses.map((a) => a.address)
+      );
+      const filteredResult = filter(result, (r: any) => parseInt(r.accountCount, 10) > 0);
+
+      totalRoles = totalRoles.concat(
+        pipe(
+          filteredResult,
+          map((r: any) =>
+            pipe(
+              collectionRoles,
+              filter((role) => role.collection === r.collection.id),
+              map((r) => r.role)
+            )
+          ),
+          flatten()
+        )
+      );
+    }
+
+    totalRoles = uniq(totalRoles);
+    const alreadyAssigned = intersection(
+      uniqueRolesAcrossServer,
+      member.roles.cache.map((r) => r.id)
     );
+    const rolesToAdd = difference(totalRoles, alreadyAssigned);
+    const rolesToRemove = difference(alreadyAssigned, totalRoles);
 
-    const alreadyAssigned = member.roles.cache.filter((role) => uniqueRolesAcrossTokens.includes(role.id));
-
-    const rolesToRemove = alreadyAssigned.filter((role) => !toBeAssigned.has(role.id));
-    const rolesToAdd = toBeAssigned.filter((role) => !alreadyAssigned.has(role.id));
-
-    if (rolesToAdd.size === 0 && rolesToRemove.size === 0) {
+    if (rolesToAdd.length === 0 && rolesToRemove.length === 0) {
       return;
     }
 
     const updatedRoles = pipe(
       member.roles.cache.map((r) => r.id),
-      difference(rolesToRemove.map((r) => r.id)),
-      concat(rolesToAdd.map((r) => r.id))
+      difference(uniqueRolesAcrossServer),
+      concat(totalRoles)
     );
 
     await member.roles.set(updatedRoles);
@@ -92,12 +147,12 @@ export default async function manageUserRoles(client: Client, serverId: string, 
       fields: [
         {
           name: "The following roles have been removed:",
-          value: rolesToRemove.size !== 0 ? rolesToRemove.map((r) => r.name).join(", ") : "None",
+          value: rolesToRemove.length !== 0 ? `- ${rolesToRemove.map((r) => guild!.roles.cache.get(r)!.name).join("\n- ")}` : "None",
           inline: false
         },
         {
           name: "The following roles have been added:",
-          value: rolesToAdd.size !== 0 ? rolesToAdd.map((r) => r.name).join(", ") : "None",
+          value: rolesToAdd.length !== 0 ? `- ${rolesToAdd.map((r) => guild!.roles.cache.get(r)!.name).join("\n- ")}` : "None",
           inline: false
         }
       ]
