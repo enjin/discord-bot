@@ -42,7 +42,17 @@ To self-host this bot, follow the steps below:
    - Discord Developer API Key: Obtain a Discord Developer API key by creating a new application at [https://discord.com/developers/applications](https://discord.com/developers/applications).
    - Discord Bot Token: Obtain a Discord bot token by creating a new bot in your Discord Developer application.
 
-2. **Create Docker Image:**
+2. **Setup Discord Bot**
+   - Create a new Discord bot by following the instructions at [https://discord.com/developers/applications](https://discord.com/developers/applications).
+   - Copy the Bot APPLICATION ID (in general information tab) and save it for later use.
+   - Go to the Bot tab and,
+     - Add Icon
+     - Add Username
+     - Click on "Reset Token" to get the bot token.
+     - Copy the Bot Token. And save it for later use.
+     - Enable the "Public Bot" option.
+
+3. **Create Docker Image:**
 
    #### Create Docker Image
    - Clone the Enjin Discord Bot repository from [https://github.com/enjin/discord-bot/](https://github.com/enjin/discord-bot/).
@@ -59,7 +69,7 @@ To self-host this bot, follow the steps below:
      ```
    
 
-3. **Set Environment Variables:**
+4. **Set Environment Variables:**
    - Create a `.env` file in the cloned repository directory.
    - Add the following environment variables to the `.env` file:
      ```
@@ -70,13 +80,13 @@ To self-host this bot, follow the steps below:
      RPC_URL=wss://rpc.matrix.blockchain.enjin.io
      ```
 
-4. **Run the Bot:**
+5. **Run the Bot:**
    - Start the bot using the following command:
      ```
      docker run --env-file .env enjin/discord-bot
      ```
 
-5. **Run without Docker:**
+6. **Run without Docker:**
     - If you prefer to run the bot without Docker, you can do so by running the following command:
       ```
       bun install
@@ -86,7 +96,7 @@ To self-host this bot, follow the steps below:
 
    The bot should now be running and ready to use in your self-hosted environment
 
-5. **Invite the Bot:**
+7. **Invite the Bot:**
    - Construct the invite URL using the following format:
      ```
      https://discord.com/oauth2/authorize?client_id=YOUR_DISCORD_APPLICATION_ID&scope=bot&permissions=275146345536
