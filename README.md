@@ -37,7 +37,7 @@ To self-host this bot, follow the steps below:
 
 1. **Requirements:**
    - Docker: Install Docker on your machine. You can find installation instructions at [https://docs.docker.com/get-docker/](https://docs.docker.com/get-docker/).
-   - MySQL: Install MySQL on your machine. You can find installation instructions at [https://dev.mysql.com/doc/mysql-installation-excerpt/8.0/en/](https://dev.mysql.com/doc/mysql-installation-excerpt/8.0/en/).
+   - MySQL: Install MySQL >=8 on your machine. You can find installation instructions at [https://dev.mysql.com/doc/mysql-installation-excerpt/8.0/en/](https://dev.mysql.com/doc/mysql-installation-excerpt/8.0/en/).
    - Wallet Connect API Key: Obtain a Wallet Connect API key from [https://cloud.walletconnect.com/](https://cloud.walletconnect.com/).
    - Discord Developer API Key: Obtain a Discord Developer API key by creating a new application at [https://discord.com/developers/applications](https://discord.com/developers/applications).
    - Discord Bot Token: Obtain a Discord bot token by creating a new bot in your Discord Developer application.
