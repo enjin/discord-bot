@@ -75,7 +75,7 @@ To self-host this bot, follow the steps below:
      ```
      DISCORD_BOT_TOKEN=
      WALLET_CONNECT_PROJECT_ID=
-     DISOCRD_APPLICATION_ID=
+     DISCORD_APPLICATION_ID=
      DB_URL=mysql://user:password@127.0.0.1:3306/db_name
      RPC_URL=wss://rpc.matrix.blockchain.enjin.io
      ```
