@@ -1,4 +1,12 @@
-import { GuildMemberRoleManager, type ButtonInteraction, Role, type EmbedData, EmbedBuilder, type APIEmbedField } from "discord.js";
+import {
+  GuildMemberRoleManager,
+  type ButtonInteraction,
+  Role,
+  type EmbedData,
+  EmbedBuilder,
+  type APIEmbedField,
+  RESTJSONErrorCodes
+} from "discord.js";
 import { connectToWC, getClient } from "@/util/wc";
 import config from "@/config";
 import { collectionAccountsOfCollections, tokenAccountsOfTokens } from "@/util/api";
@@ -84,7 +92,7 @@ export const connectWallet = async (interaction: ButtonInteraction) => {
       accountsToVerify = accountsToVerify.concat(
         pipe(
           filteredResult,
-          map((r: any) => r.account.address as string),
+          map((r: any) => r.account.address as string)
         )
       );
 
@@ -119,7 +127,7 @@ export const connectWallet = async (interaction: ButtonInteraction) => {
       accountsToVerify = accountsToVerify.concat(
         pipe(
           filteredResult,
-          map((r: any) => r.account.address as string),
+          map((r: any) => r.account.address as string)
         )
       );
 
@@ -229,9 +237,15 @@ export const connectWallet = async (interaction: ButtonInteraction) => {
             // ignore
           });
       }
-    } catch (error) {
-      console.error("assign role", error);
-      await interaction.followUp({ content: `❌ Can not assign roles. :${error}`, ephemeral: true });
+    } catch (error: any) {
+      if (error.code === RESTJSONErrorCodes.MissingPermissions) {
+        await interaction.followUp({
+          content: `❌ Roles cannot be assigned. The bot role must be higher in hierarchy compared to other roles.`,
+          ephemeral: true
+        });
+      } else {
+        await interaction.followUp({ content: `❌ Roles cannot be assigned. :${error}`, ephemeral: true });
+      }
     }
     // === END OF ASSIGN ROLES ===
   } catch (error) {
