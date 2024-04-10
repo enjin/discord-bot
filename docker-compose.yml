@@ -18,7 +18,7 @@ services:
   bot:
     container_name: discord_bot
     restart: always
-    image: ghcr.io/enjin/discord-bot:latest
+    image: enjin/discord-bot:latest
     build:
       context: .
     env_file:
