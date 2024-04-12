@@ -22,5 +22,5 @@ CronJob.from({
     handle();
   },
   utcOffset: 0,
-  start: Boolean(process.env.CRON_ENABLED ?? true) // you can disable this by setting to false
+  start: Boolean(process.env.CRON_DISABLED ?? true) // you can disable this by setting env to true
 });
