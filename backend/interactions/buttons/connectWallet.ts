@@ -32,21 +32,35 @@ export const connectWallet = async (interaction: ButtonInteraction) => {
 
     const addresses = session.namespaces.polkadot.accounts.map((n) => n.slice(config.wcNamespace.length + 1));
 
-    const tokenRoles = await db
-      .select({
-        role: schema.serverTokenRoles.roleId,
-        token: schema.serverTokenRoles.tokenId
-      })
-      .from(schema.serverTokenRoles)
-      .where(eq(schema.serverTokenRoles.serverId, interaction.guild!.id));
+    const tokenRoles = await db.query.tokenRoles.findMany({
+      columns: {
+        tokenId: true,
+        balance: true
+      },
+      with: {
+        roles: {
+          columns: {
+            roleId: true
+          }
+        }
+      },
+      where: (tokenRoles, { eq }) => eq(tokenRoles.serverId, interaction.guildId!)
+    });
 
-    const collectionRoles = await db
-      .select({
-        role: schema.serverCollectionRoles.roleId,
-        collection: schema.serverCollectionRoles.collectionId
-      })
-      .from(schema.serverCollectionRoles)
-      .where(eq(schema.serverCollectionRoles.serverId, interaction.guild!.id));
+    const collectionRoles = await db.query.collectionRoles.findMany({
+      columns: {
+        collectionId: true,
+        tokenCount: true
+      },
+      with: {
+        roles: {
+          columns: {
+            roleId: true
+          }
+        }
+      },
+      where: (collectionRoles, { eq }) => eq(collectionRoles.serverId, interaction.guildId!)
+    });
 
     if (tokenRoles.length === 0 && collectionRoles.length === 0) {
       return interaction.followUp({ content: "❌ No roles configured on this server.", ephemeral: true });
@@ -64,20 +78,24 @@ export const connectWallet = async (interaction: ButtonInteraction) => {
 
     const tokens = pipe(
       tokenRoles,
-      uniqBy((r) => r.token),
-      map((r) => r.token)
+      map((r) => r.tokenId)
     );
 
     const collections = pipe(
       collectionRoles,
-      uniqBy((r) => r.collection),
-      map((r) => r.collection)
+      map((r) => r.collectionId)
     );
 
-    const uniqueRolesAcrossServer = pipe(
-      concat(tokenRoles, collectionRoles),
-      uniqBy((r) => r.role),
-      map((r) => r.role)
+    const uniqueRolesAcrossServer = map(
+      await db.query.roles
+        .findMany({
+          columns: {
+            roleId: true
+          },
+          where: eq(schema.roles.serverId, interaction.guildId!)
+        })
+        .execute(),
+      (r) => r.roleId
     );
 
     let totalRoles: Role[] = [];
@@ -87,7 +105,7 @@ export const connectWallet = async (interaction: ButtonInteraction) => {
     // handle token roles
     if (tokenRoles.length !== 0) {
       const result = await tokenAccountsOfTokens(tokens, addresses);
-      const filteredResult = filter(result, (r: any) => parseInt(r.totalBalance, 10) > 0);
+      const filteredResult = filter(result, (r: any) => parseInt(r.totalBalance, 10) > 0 && tokenRoles.some((role) => role.tokenId === r.token.id && parseInt(r.totalBalance, 10) >= role.balance));
 
       accountsToVerify = accountsToVerify.concat(
         pipe(
@@ -102,8 +120,10 @@ export const connectWallet = async (interaction: ButtonInteraction) => {
           map((r: any) =>
             pipe(
               tokenRoles,
-              filter((role) => role.token === r.token.id),
-              map((r) => interaction.guild!.roles.cache.get(r.role) as Role)
+              filter((role) => role.tokenId === r.token.id && parseInt(r.totalBalance, 10) >= role.balance),
+              map((role) => role.roles),
+              flatten(),
+              map((r) => interaction.guild!.roles.cache.get(r.roleId) as Role)
             )
           ),
           flatten()
@@ -122,7 +142,7 @@ export const connectWallet = async (interaction: ButtonInteraction) => {
     // handle collection roles
     if (collectionRoles.length !== 0) {
       const result = await collectionAccountsOfCollections(collections, addresses);
-      const filteredResult = filter(result, (r: any) => parseInt(r.accountCount, 10) > 0);
+      const filteredResult = filter(result, (r: any) => parseInt(r.accountCount, 10) > 0 && collectionRoles.some((role) => role.collectionId === r.collection.id && parseInt(r.accountCount, 10) >= role.tokenCount));
 
       accountsToVerify = accountsToVerify.concat(
         pipe(
@@ -137,13 +157,17 @@ export const connectWallet = async (interaction: ButtonInteraction) => {
           map((r: any) =>
             pipe(
               collectionRoles,
-              filter((role) => role.collection === r.collection.id),
-              map((r) => interaction.guild!.roles.cache.get(r.role) as Role)
+              filter((role) => role.collectionId === r.collection.id && parseInt(r.accountCount, 10) >= role.tokenCount),
+              map((role) => role.roles),
+              flatten(),
+              map((r) => interaction.guild!.roles.cache.get(r.roleId) as Role)
             )
           ),
           flatten()
         )
       );
+
+      
 
       embedResultField.push({
         name: "You own a token from collections:",
@@ -155,7 +179,27 @@ export const connectWallet = async (interaction: ButtonInteraction) => {
     }
 
     if (totalRoles.length === 0) {
-      return interaction.followUp({ content: "No roles to assign.", ephemeral: true });
+      const embed: EmbedData = {
+        title: `Sorry, but there are currently no roles available for you. However, you can earn the Discord role by collecting the following NFTs:`,
+        color: 0x7567ce,
+        fields: [
+          {
+            name: "",
+            value: `- ${tokenRoles.map((role) => `Acquire ${role.balance} copies of Token [${role.tokenId}](https://nft.io/asset/${role.tokenId})`).join("\n- ")}`,
+            inline: false
+          },
+          {
+            name: "",
+            value: `- ${collectionRoles.map((role) => `Collect ${role.tokenCount} Tokens from Collection [${role.collectionId}](https://nft.io/collection/${role.collectionId})`).join("\n- ")}`,
+            inline: false
+          }
+        ]
+      };
+      const embedBuilder = new EmbedBuilder(embed);
+      return interaction.followUp({
+        embeds: [embedBuilder],
+        ephemeral: true
+      });
     }
 
     accountsToVerify = uniq(accountsToVerify);

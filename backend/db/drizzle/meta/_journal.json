@@ -5,22 +5,8 @@
     {
       "idx": 0,
       "version": "5",
-      "when": 1708524254264,
-      "tag": "0000_dapper_preak",
-      "breakpoints": true
-    },
-    {
-      "idx": 1,
-      "version": "5",
-      "when": 1709031953849,
-      "tag": "0001_slow_radioactive_man",
-      "breakpoints": true
-    },
-    {
-      "idx": 2,
-      "version": "5",
-      "when": 1712879954186,
-      "tag": "0002_clean_squadron_supreme",
+      "when": 1712881843929,
+      "tag": "0000_yummy_wraith",
       "breakpoints": true
     }
   ]

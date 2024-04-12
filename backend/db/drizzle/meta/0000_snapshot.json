@@ -1,7 +1,7 @@
 {
   "version": "5",
   "dialect": "mysql",
-  "id": "22ee9a12-9e80-4da9-93e0-9cb767da2ba8",
+  "id": "a844f809-10f7-4a2b-9215-476dc082ca92",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "tables": {
     "account_address": {
@@ -44,6 +44,59 @@
           "columns": [
             "member_id",
             "address"
+          ]
+        }
+      },
+      "uniqueConstraints": {}
+    },
+    "collection_roles": {
+      "name": "collection_roles",
+      "columns": {
+        "server_id": {
+          "name": "server_id",
+          "type": "varchar(20)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "collection_id": {
+          "name": "collection_id",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "token_count": {
+          "name": "token_count",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": 1
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "collection_roles_server_id_servers_id_fk": {
+          "name": "collection_roles_server_id_servers_id_fk",
+          "tableFrom": "collection_roles",
+          "tableTo": "servers",
+          "columnsFrom": [
+            "server_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {
+        "collection_roles_pk": {
+          "name": "collection_roles_pk",
+          "columns": [
+            "server_id",
+            "collection_id"
           ]
         }
       },
@@ -100,25 +153,48 @@
       },
       "uniqueConstraints": {}
     },
-    "server_token_roles": {
-      "name": "server_token_roles",
+    "roles": {
+      "name": "roles",
       "columns": {
-        "server_id": {
-          "name": "server_id",
+        "role_id": {
+          "name": "role_id",
           "type": "varchar(20)",
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false
         },
+        "initial_name": {
+          "name": "initial_name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "('')"
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false,
+          "default": "(now())"
+        },
         "token_id": {
           "name": "token_id",
           "type": "varchar(255)",
           "primaryKey": false,
-          "notNull": true,
+          "notNull": false,
           "autoincrement": false
         },
-        "role_id": {
-          "name": "role_id",
+        "collection_id": {
+          "name": "collection_id",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "server_id": {
+          "name": "server_id",
           "type": "varchar(20)",
           "primaryKey": false,
           "notNull": true,
@@ -127,9 +203,9 @@
       },
       "indexes": {},
       "foreignKeys": {
-        "server_token_roles_server_id_servers_id_fk": {
-          "name": "server_token_roles_server_id_servers_id_fk",
-          "tableFrom": "server_token_roles",
+        "roles_server_id_servers_id_fk": {
+          "name": "roles_server_id_servers_id_fk",
+          "tableFrom": "roles",
           "tableTo": "servers",
           "columnsFrom": [
             "server_id"
@@ -139,16 +215,47 @@
           ],
           "onDelete": "cascade",
           "onUpdate": "no action"
+        },
+        "token_roles_fk": {
+          "name": "token_roles_fk",
+          "tableFrom": "roles",
+          "tableTo": "token_roles",
+          "columnsFrom": [
+            "server_id",
+            "token_id"
+          ],
+          "columnsTo": [
+            "server_id",
+            "token_id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "collection_roles_fk": {
+          "name": "collection_roles_fk",
+          "tableFrom": "roles",
+          "tableTo": "collection_roles",
+          "columnsFrom": [
+            "server_id",
+            "collection_id"
+          ],
+          "columnsTo": [
+            "server_id",
+            "collection_id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
         }
       },
       "compositePrimaryKeys": {},
       "uniqueConstraints": {
-        "server_token_roles_unique": {
-          "name": "server_token_roles_unique",
+        "roles_uk": {
+          "name": "roles_uk",
           "columns": [
             "server_id",
             "role_id",
-            "token_id"
+            "token_id",
+            "collection_id"
           ]
         }
       }
@@ -193,6 +300,59 @@
           "name": "servers_id",
           "columns": [
             "id"
+          ]
+        }
+      },
+      "uniqueConstraints": {}
+    },
+    "token_roles": {
+      "name": "token_roles",
+      "columns": {
+        "server_id": {
+          "name": "server_id",
+          "type": "varchar(20)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "token_id": {
+          "name": "token_id",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "balance": {
+          "name": "balance",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": 1
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "token_roles_server_id_servers_id_fk": {
+          "name": "token_roles_server_id_servers_id_fk",
+          "tableFrom": "token_roles",
+          "tableTo": "servers",
+          "columnsFrom": [
+            "server_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {
+        "token_roles_pk": {
+          "name": "token_roles_pk",
+          "columns": [
+            "server_id",
+            "token_id"
           ]
         }
       },

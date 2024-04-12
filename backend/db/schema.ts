@@ -31,8 +31,8 @@ export const accountAddress = mysqlTable(
   }
 );
 
-export const serverTokenRoles = mysqlTable(
-  "server_token_roles",
+export const tokenRoles = mysqlTable(
+  "token_roles",
   {
     serverId: varchar("server_id", { length: 20 })
       .references(() => servers.id, { onDelete: "cascade" })
@@ -42,13 +42,13 @@ export const serverTokenRoles = mysqlTable(
   },
   (table) => {
     return {
-      server_token_roles_pk: primaryKey({ name: "server_token_roles_pk", columns: [table.serverId, table.tokenId] })
+      token_roles_pk: primaryKey({ name: "token_roles_pk", columns: [table.serverId, table.tokenId] })
     };
   }
 );
 
-export const serverCollectionRoles = mysqlTable(
-  "server_collection_roles",
+export const collectionRoles = mysqlTable(
+  "collection_roles",
   {
     serverId: varchar("server_id", { length: 20 })
       .references(() => servers.id, { onDelete: "cascade" })
@@ -58,15 +58,15 @@ export const serverCollectionRoles = mysqlTable(
   },
   (table) => {
     return {
-      server_collection_roles_pk: primaryKey({ name: "server_collection_roles_pk", columns: [table.serverId, table.collectionId] })
+      collection_roles_pk: primaryKey({ name: "collection_roles_pk", columns: [table.serverId, table.collectionId] })
     };
   }
 );
 
-export const serverRoles = mysqlTable(
-  "server_roles",
+export const roles = mysqlTable(
+  "roles",
   {
-    roleId: varchar("role_id", { length: 20 }),
+    roleId: varchar("role_id", { length: 20 }).notNull(),
     initialName: text("initial_name").notNull().default(""),
     createdAt: timestamp("created_at").defaultNow(),
     tokenId: varchar("token_id", { length: 255 }),
@@ -79,42 +79,43 @@ export const serverRoles = mysqlTable(
     return {
       token: foreignKey({
         columns: [table.serverId, table.tokenId],
-        foreignColumns: [serverTokenRoles.serverId, serverTokenRoles.tokenId],
+        foreignColumns: [tokenRoles.serverId, tokenRoles.tokenId],
         name: "token_roles_fk"
       }).onDelete("cascade"),
       collection: foreignKey({
         columns: [table.serverId, table.collectionId],
-        foreignColumns: [serverCollectionRoles.serverId, serverCollectionRoles.collectionId],
+        foreignColumns: [collectionRoles.serverId, collectionRoles.collectionId],
         name: "collection_roles_fk"
       }).onDelete("cascade"),
-      uk: unique("server_roles_uk").on(table.serverId, table.roleId, table.tokenId, table.collectionId)
+      uk: unique("roles_uk").on(table.serverId, table.roleId, table.tokenId, table.collectionId)
     };
   }
 );
 
 /// relations
 
-export const serverCollectionRolesRelations = relations(serverCollectionRoles, ({ many }) => ({
-  posts: many(serverRoles, {
-    relationName: "roles"
-  })
-}));
 
-export const serverTokenRolesRelations = relations(serverTokenRoles, ({ many }) => ({
-  posts: many(serverRoles, {
-    relationName: "roles"
-  })
-}));
-
-export const serverRolesRelations = relations(serverRoles, ({ one }) => ({
-  token: one(serverTokenRoles, {
-    fields: [serverRoles.serverId, serverRoles.tokenId],
-    references: [serverTokenRoles.serverId, serverTokenRoles.tokenId],
-    relationName: "token"
+export const rolesRelations = relations(roles, ({ one }) => ({
+  token: one(tokenRoles, {
+    fields: [roles.serverId, roles.tokenId],
+    references: [tokenRoles.serverId, tokenRoles.tokenId],
+    relationName: "token_roles",
   }),
-  collection: one(serverCollectionRoles, {
-    fields: [serverRoles.serverId, serverRoles.collectionId],
-    references: [serverCollectionRoles.serverId, serverCollectionRoles.collectionId],
-    relationName: "collection"
+  collection: one(collectionRoles, {
+    fields: [roles.serverId, roles.collectionId],
+    references: [collectionRoles.serverId, collectionRoles.collectionId],
+    relationName: "collection_roles"
+  })
+}));
+
+export const collectionRolesRelations = relations(collectionRoles, ({ many }) => ({
+  roles: many(roles, {
+    relationName: "collection_roles"
+  })
+}));
+
+export const tokenRolesRelations = relations(tokenRoles, ({ many }) => ({
+  roles: many(roles, {
+    relationName: "token_roles"
   })
 }));
