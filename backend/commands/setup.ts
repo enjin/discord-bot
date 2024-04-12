@@ -37,8 +37,8 @@ export default {
     const tokenId = interaction.options.getString("asset", false);
     const balance = interaction.options.getInteger("balance", false) || 1;
 
-    if (balance > 10_000) {
-      return interaction.reply({ content: "Balance should be less than 10,000", ephemeral: true });
+    if (balance > Number.MAX_SAFE_INTEGER && balance < 1) {
+      return interaction.reply({ content: "Balance should be b/w 1 to 2^53", ephemeral: true });
     }
 
     const roleBuilder = new RoleSelectMenuBuilder().setCustomId("role").setPlaceholder("Select a role").setMinValues(1).setMaxValues(5);
