@@ -19,7 +19,7 @@ export default {
     .setDescription("Setup the bot")
     .setDefaultMemberPermissions(PermissionFlagsBits.Administrator)
     .addStringOption((option) => option.setName("collection").setDescription("Enter collection ID").setRequired(true))
-    .addIntegerOption((option) => option.setName("balance").setDescription("Enter Balance of the token or Enter account count of the collection"))
+    .addIntegerOption((option) => option.setName("balance").setDescription("Enter balance of the token or Enter account count of the collection"))
     .addStringOption((option) => option.setName("asset").setDescription("Enter Asset ID"))
     .setDMPermission(false),
 
