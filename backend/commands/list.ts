@@ -1,6 +1,6 @@
 import { SlashCommandBuilder, PermissionFlagsBits, ChatInputCommandInteraction } from "discord.js";
 import { db, schema } from "../db";
-import { eq, sql } from "drizzle-orm";
+import { eq } from "drizzle-orm";
 
 export default {
   data: new SlashCommandBuilder()
@@ -19,7 +19,7 @@ export default {
     }
 
     const server = await db.query.servers.findFirst({
-      where: eq(schema.servers.id, interaction.guildId!)
+      where: eq(schema.servers.id, interaction.guildId)
     });
 
     if (!server) {
@@ -38,7 +38,7 @@ export default {
           }
         }
       },
-      where: (tokenRoles, { eq }) => eq(tokenRoles.serverId, interaction.guildId!)
+      where: (tokenRoles, { eq }) => eq(tokenRoles.serverId, interaction.guildId)
     });
 
     const collectionRoles = await db.query.collectionRoles.findMany({
@@ -53,10 +53,8 @@ export default {
           }
         }
       },
-      where: (collectionRoles, { eq }) => eq(collectionRoles.serverId, interaction.guildId!)
+      where: (collectionRoles, { eq }) => eq(collectionRoles.serverId, interaction.guildId)
     });
-
-
 
     if (tokenRoles.length === 0 && collectionRoles.length === 0) {
       return interaction.reply({ content: "No roles configured.", ephemeral: true });

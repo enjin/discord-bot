@@ -12,6 +12,7 @@ import { setupGuild } from "../util/server";
 import { getCollection, getToken } from "../util/api";
 import { map } from "remeda";
 
+
 export default {
   data: new SlashCommandBuilder()
     .setName("setup")
@@ -23,7 +24,7 @@ export default {
     .setDMPermission(false),
 
   async handler(interaction: ChatInputCommandInteraction) {
-    setupGuild(interaction.guildId!, interaction.guild!.name);
+    setupGuild(interaction.guildId as string, interaction.guild?.name ?? '');
     if (!interaction.inGuild()) {
       return interaction.reply({ content: "This command can only be used in a server.", ephemeral: true });
     }
@@ -65,17 +66,17 @@ export default {
         }
         await db
           .delete(schema.tokenRoles)
-          .where(and(eq(schema.tokenRoles.serverId, interaction.guildId!), eq(schema.tokenRoles.tokenId, assetId)))
+          .where(and(eq(schema.tokenRoles.serverId, interaction.guildId), eq(schema.tokenRoles.tokenId, assetId)))
           .execute();
 
         await db
           .insert(schema.tokenRoles)
-          .values({ serverId: interaction.guildId!, tokenId: assetId, balance })
+          .values({ serverId: interaction.guildId, tokenId: assetId, balance })
           .execute();
 
         await db
           .insert(schema.roles)
-          .values(map(i.values, (r) => ({ serverId: interaction.guildId!, tokenId: assetId, roleId: r })))
+          .values(map(i.values, (r) => ({ serverId: interaction.guildId, tokenId: assetId, roleId: r })))
           .execute();
 
         await i.reply({
@@ -109,14 +110,14 @@ export default {
 
         await db
           .delete(schema.collectionRoles)
-          .where(and(eq(schema.collectionRoles.serverId, interaction.guildId!), eq(schema.collectionRoles.collectionId, collectionId)))
+          .where(and(eq(schema.collectionRoles.serverId, interaction.guildId), eq(schema.collectionRoles.collectionId, collectionId)))
           .execute();
 
-        await db.insert(schema.collectionRoles).values({ serverId: interaction.guildId!, collectionId, tokenCount: balance }).execute();
+        await db.insert(schema.collectionRoles).values({ serverId: interaction.guildId, collectionId, tokenCount: balance }).execute();
 
         await db
           .insert(schema.roles)
-          .values(map(i.values, (r) => ({ serverId: interaction.guildId!, collectionId, roleId: r, tokenCount: balance })))
+          .values(map(i.values, (r) => ({ serverId: interaction.guildId, collectionId, roleId: r, tokenCount: balance })))
           .execute();
 
         await i.reply({

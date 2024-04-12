@@ -6,7 +6,8 @@ import {
   ButtonBuilder,
   ButtonStyle,
   ActionRowBuilder,
-  RESTJSONErrorCodes
+  RESTJSONErrorCodes,
+  type RESTError
 } from "discord.js";
 import { db, schema } from "../db";
 import { eq } from "drizzle-orm";
@@ -36,7 +37,7 @@ export default {
     const description = interaction.options.getString("description", false);
 
     const server = await db.query.servers.findFirst({
-      where: eq(schema.servers.id, interaction.guildId!)
+      where: eq(schema.servers.id, interaction.guildId)
     });
 
     if (!server) {
@@ -63,8 +64,8 @@ export default {
     try {
       await interaction.channel.send({ embeds: [embedBuilder], components: [row] });
       await interaction.reply({ content: "Button added", ephemeral: true });
-    } catch (error: any) {
-      if (error.code === RESTJSONErrorCodes.MissingAccess) {
+    } catch (error) {
+      if ((error as RESTError).code === RESTJSONErrorCodes.MissingAccess) {
         return interaction.reply({
           content: `Hey ${interaction.member.user.username}, This channel is set to private, and I'm unable to send messages here without the necessary permissions. \nCould you please add my role to the channel permissions and then try again?`,
           ephemeral: true
