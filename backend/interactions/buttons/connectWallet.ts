@@ -105,19 +105,19 @@ export const connectWallet = async (interaction: ButtonInteraction) => {
     // handle token roles
     if (tokenRoles.length !== 0) {
       const result = await tokenAccountsOfTokens(tokens, addresses);
-      const filteredResult = filter(result, (r: any) => parseInt(r.totalBalance, 10) > 0 && tokenRoles.some((role) => role.tokenId === r.token.id && parseInt(r.totalBalance, 10) >= role.balance));
+      const filteredResult = filter(result, (r) => parseInt(r.totalBalance, 10) > 0 && tokenRoles.some((role) => role.tokenId === r.token.id && parseInt(r.totalBalance, 10) >= role.balance));
 
       accountsToVerify = accountsToVerify.concat(
         pipe(
           filteredResult,
-          map((r: any) => r.account.address as string)
+          map((r) => r.account.address as string)
         )
       );
 
       totalRoles = totalRoles.concat(
         pipe(
           filteredResult,
-          map((r: any) =>
+          map((r) =>
             pipe(
               tokenRoles,
               filter((role) => role.tokenId === r.token.id && parseInt(r.totalBalance, 10) >= role.balance),
@@ -133,7 +133,7 @@ export const connectWallet = async (interaction: ButtonInteraction) => {
       embedResultField.push({
         name: "You own the following tokens:",
         value: `- ${uniqBy(filteredResult, (r) => r.token.id)
-          .map((r: any) => r.token.metadata?.name ?? r.token.id)
+          .map((r) => r.token.metadata?.name ?? r.token.id)
           .join("\n- ")}`,
         inline: false
       });
@@ -142,7 +142,7 @@ export const connectWallet = async (interaction: ButtonInteraction) => {
     // handle collection roles
     if (collectionRoles.length !== 0) {
       const result = await collectionAccountsOfCollections(collections, addresses);
-      const filteredResult = filter(result, (r: any) => parseInt(r.accountCount, 10) > 0 && collectionRoles.some((role) => role.collectionId === r.collection.id && parseInt(r.accountCount, 10) >= role.tokenCount));
+      const filteredResult = filter(result, (r) => parseInt(r.accountCount, 10) > 0 && collectionRoles.some((role) => role.collectionId === r.collection.id && parseInt(r.accountCount, 10) >= role.tokenCount));
 
       accountsToVerify = accountsToVerify.concat(
         pipe(

@@ -1,4 +1,4 @@
-import { Client, Events, GatewayIntentBits, GuildMemberRoleManager } from "discord.js";
+import { Client, Events, GatewayIntentBits } from "discord.js";
 import { commandCollection } from "./commands";
 import config from "./config";
 import { removeGuild, setupGuild } from "./util/server";

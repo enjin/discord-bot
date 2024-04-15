@@ -1,8 +1,13 @@
-import { Collection } from "discord.js";
+import { ChatInputCommandInteraction, Collection, InteractionResponse, SlashCommandBuilder, type RESTPostAPIChatInputApplicationCommandsJSONBody } from "discord.js";
 import allCommands from "./commands/index";
 
-const commands: any[] = [];
-const commandCollection = new Collection<string, (typeof allCommands)[0]>();
+type Command = {
+  data: SlashCommandBuilder;
+  handler(interaction: ChatInputCommandInteraction): Promise<InteractionResponse<boolean> | undefined>;
+}
+
+const commands: RESTPostAPIChatInputApplicationCommandsJSONBody[] = [];
+const commandCollection = new Collection<string, Command>();
 
 for (const command of allCommands) {
   commands.push(command.data.toJSON());

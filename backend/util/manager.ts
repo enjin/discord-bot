@@ -1,7 +1,7 @@
 import { EmbedBuilder, type Client, type Guild, type EmbedData } from "discord.js";
 import { db, schema } from "@/db";
 import { eq } from "drizzle-orm";
-import { filter, map, pipe, uniqBy, flatten, reduce, difference, concat, uniq, intersection } from "remeda";
+import { filter, map, pipe, flatten, difference, concat, uniq, intersection } from "remeda";
 import { collectionAccountsOfCollections, tokenAccountsOfTokens } from "@/util/api";
 
 export default async function manageUserRoles(client: Client, serverId: string, memberId: string) {

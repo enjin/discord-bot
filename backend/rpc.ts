@@ -1,4 +1,3 @@
-import config from "@/config";
 import { db, schema } from "@/db";
 import { eq } from "drizzle-orm";
 import manageUserRoles from "@/util/manager";
