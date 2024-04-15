@@ -5,14 +5,26 @@
   "scripts": {
     "build": "rm -rf dist && bun build --target=bun --root . backend/index.ts --outdir=dist",
     "dev": "bun run backend/index.ts",
+    "lint":"eslint \"./backend/commands/*.ts\"",
     "db:push": "bun run drizzle-kit push:mysql --config backend/db/drizzle.config.ts",
     "db:generate": "bun run drizzle-kit generate:mysql --config backend/db/drizzle.config.ts",
     "db:migrate": "bun run backend/db/migrate.ts"
   },
   "devDependencies": {
+    "@eslint/eslintrc": "^3.0.2",
+    "@eslint/js": "^9.0.0",
     "@types/bun": "latest",
     "@types/qrcode": "^1.5.5",
-    "drizzle-kit": "^0.20.13"
+    "@typescript-eslint/eslint-plugin": "^6.4.0",
+    "drizzle-kit": "^0.20.13",
+    "eslint": "^9.0.0",
+    "eslint-config-standard-with-typescript": "^43.0.1",
+    "eslint-plugin-import": "^2.25.2",
+    "eslint-plugin-n": "^15.0.0 || ^16.0.0",
+    "eslint-plugin-promise": "^6.0.0",
+    "globals": "^15.0.0",
+    "typescript": "*",
+    "typescript-eslint": "^7.6.0"
   },
   "peerDependencies": {
     "typescript": "^5.0.0"
@@ -25,7 +37,7 @@
     "@walletconnect/sign-client": "^2.11.0",
     "cron": "^3.1.6",
     "discord.js": "^14.14.1",
-    "drizzle-orm": "^0.29.3",
+    "drizzle-orm": "^0.30.8",
     "mysql2": "^3.9.1",
     "qrcode": "^1.5.3",
     "remeda": "^1.40.1",

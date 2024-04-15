@@ -1,4 +1,5 @@
-import { int, mysqlTable, varchar, text, timestamp, primaryKey, unique, index } from "drizzle-orm/mysql-core";
+import { int, mysqlTable, varchar, text, timestamp, primaryKey, unique, foreignKey } from "drizzle-orm/mysql-core";
+import { relations } from "drizzle-orm";
 
 export const servers = mysqlTable("servers", {
   id: varchar("id", { length: 20 }).primaryKey(), // guildId
@@ -30,34 +31,91 @@ export const accountAddress = mysqlTable(
   }
 );
 
-export const serverTokenRoles = mysqlTable(
-  "server_token_roles",
+export const tokenRoles = mysqlTable(
+  "token_roles",
   {
     serverId: varchar("server_id", { length: 20 })
       .references(() => servers.id, { onDelete: "cascade" })
       .notNull(),
     tokenId: varchar("token_id", { length: 255 }).notNull(),
-    roleId: varchar("role_id", { length: 20 }).notNull()
+    balance: int("balance").notNull().default(1)
   },
   (table) => {
     return {
-      unique: unique("server_token_roles_unique").on(table.serverId, table.roleId, table.tokenId)
+      token_roles_pk: primaryKey({ name: "token_roles_pk", columns: [table.serverId, table.tokenId] })
     };
   }
 );
 
-export const serverCollectionRoles = mysqlTable(
-  "server_collection_roles",
+export const collectionRoles = mysqlTable(
+  "collection_roles",
   {
     serverId: varchar("server_id", { length: 20 })
       .references(() => servers.id, { onDelete: "cascade" })
       .notNull(),
     collectionId: varchar("collection_id", { length: 255 }).notNull(),
-    roleId: varchar("role_id", { length: 20 }).notNull()
+    tokenCount: int("token_count").notNull().default(1)
   },
   (table) => {
     return {
-      unique: unique("server_collection_roles_unique").on(table.serverId, table.roleId, table.collectionId)
+      collection_roles_pk: primaryKey({ name: "collection_roles_pk", columns: [table.serverId, table.collectionId] })
     };
   }
 );
+
+export const roles = mysqlTable(
+  "roles",
+  {
+    roleId: varchar("role_id", { length: 20 }).notNull(),
+    initialName: text("initial_name").notNull().default(""),
+    createdAt: timestamp("created_at").defaultNow(),
+    tokenId: varchar("token_id", { length: 255 }),
+    collectionId: varchar("collection_id", { length: 255 }),
+    serverId: varchar("server_id", { length: 20 })
+      .references(() => servers.id, { onDelete: "cascade" })
+      .notNull()
+  },
+  (table) => {
+    return {
+      token: foreignKey({
+        columns: [table.serverId, table.tokenId],
+        foreignColumns: [tokenRoles.serverId, tokenRoles.tokenId],
+        name: "token_roles_fk"
+      }).onDelete("cascade"),
+      collection: foreignKey({
+        columns: [table.serverId, table.collectionId],
+        foreignColumns: [collectionRoles.serverId, collectionRoles.collectionId],
+        name: "collection_roles_fk"
+      }).onDelete("cascade"),
+      uk: unique("roles_uk").on(table.serverId, table.roleId, table.tokenId, table.collectionId)
+    };
+  }
+);
+
+/// relations
+
+
+export const rolesRelations = relations(roles, ({ one }) => ({
+  token: one(tokenRoles, {
+    fields: [roles.serverId, roles.tokenId],
+    references: [tokenRoles.serverId, tokenRoles.tokenId],
+    relationName: "token_roles",
+  }),
+  collection: one(collectionRoles, {
+    fields: [roles.serverId, roles.collectionId],
+    references: [collectionRoles.serverId, collectionRoles.collectionId],
+    relationName: "collection_roles"
+  })
+}));
+
+export const collectionRolesRelations = relations(collectionRoles, ({ many }) => ({
+  roles: many(roles, {
+    relationName: "collection_roles"
+  })
+}));
+
+export const tokenRolesRelations = relations(tokenRoles, ({ many }) => ({
+  roles: many(roles, {
+    relationName: "token_roles"
+  })
+}));

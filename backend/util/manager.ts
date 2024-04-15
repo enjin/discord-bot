@@ -34,38 +34,56 @@ export default async function manageUserRoles(client: Client, serverId: string, 
       //TODO: remove the connected account from the database
     }
 
-    const tokenRoles = await db
-      .select({
-        role: schema.serverTokenRoles.roleId,
-        token: schema.serverTokenRoles.tokenId
-      })
-      .from(schema.serverTokenRoles)
-      .where(eq(schema.serverTokenRoles.serverId, serverId));
+    const tokenRoles = await db.query.tokenRoles.findMany({
+      columns: {
+        tokenId: true,
+        balance: true
+      },
+      with: {
+        roles: {
+          columns: {
+            roleId: true
+          }
+        }
+      },
+      where: (tokenRoles, { eq }) => eq(tokenRoles.serverId, serverId)
+    });
 
-    const collectionRoles = await db
-      .select({
-        role: schema.serverCollectionRoles.roleId,
-        collection: schema.serverCollectionRoles.collectionId
-      })
-      .from(schema.serverCollectionRoles)
-      .where(eq(schema.serverCollectionRoles.serverId, serverId));
-
-    const uniqueRolesAcrossServer = pipe(
-      concat(tokenRoles, collectionRoles),
-      uniqBy((r) => r.role),
-      map((r) => r.role)
-    );
+    const collectionRoles = await db.query.collectionRoles.findMany({
+      columns: {
+        collectionId: true,
+        tokenCount: true
+      },
+      with: {
+        roles: {
+          columns: {
+            roleId: true
+          }
+        }
+      },
+      where: (collectionRoles, { eq }) => eq(collectionRoles.serverId, serverId)
+    });
 
     const tokens = pipe(
       tokenRoles,
-      uniqBy((r) => r.token),
-      map((r) => r.token)
+      map((r) => r.tokenId)
     );
 
     const collections = pipe(
       collectionRoles,
-      uniqBy((r) => r.collection),
-      map((r) => r.collection)
+      map((r) => r.collectionId)
+    );
+
+    const uniqueRolesAcrossServer = map(
+      await db.query.roles
+        .findMany({
+          columns: {
+            roleId: true
+          },
+          where: eq(schema.roles.serverId, serverId)
+        })
+        .execute(),
+      (r) => r.roleId
     );
 
     const addresses = await db
@@ -82,7 +100,11 @@ export default async function manageUserRoles(client: Client, serverId: string, 
         tokens,
         addresses.map((a) => a.address)
       );
-      const filteredResult = filter(result, (r: any) => parseInt(r.totalBalance, 10) > 0);
+      const filteredResult = filter(
+        result,
+        (r: any) =>
+          parseInt(r.totalBalance, 10) > 0 && tokenRoles.some((role) => role.tokenId === r.token.id && parseInt(r.totalBalance, 10) >= role.balance)
+      );
 
       totalRoles = totalRoles.concat(
         pipe(
@@ -90,8 +112,10 @@ export default async function manageUserRoles(client: Client, serverId: string, 
           map((r: any) =>
             pipe(
               tokenRoles,
-              filter((role) => role.token === r.token.id),
-              map((r) => r.role)
+              filter((role) => role.tokenId === r.token.id && parseInt(r.totalBalance, 10) >= role.balance),
+              map((role) => role.roles),
+              flatten(),
+              map((r) => r.roleId)
             )
           ),
           flatten()
@@ -104,7 +128,12 @@ export default async function manageUserRoles(client: Client, serverId: string, 
         collections,
         addresses.map((a) => a.address)
       );
-      const filteredResult = filter(result, (r: any) => parseInt(r.accountCount, 10) > 0);
+      const filteredResult = filter(
+        result,
+        (r: any) =>
+          parseInt(r.accountCount, 10) > 0 &&
+          collectionRoles.some((role) => role.collectionId === r.collection.id && parseInt(r.accountCount, 10) >= role.tokenCount)
+      );
 
       totalRoles = totalRoles.concat(
         pipe(
@@ -112,8 +141,10 @@ export default async function manageUserRoles(client: Client, serverId: string, 
           map((r: any) =>
             pipe(
               collectionRoles,
-              filter((role) => role.collection === r.collection.id),
-              map((r) => r.role)
+              filter((role) => role.collectionId === r.collection.id && parseInt(r.accountCount, 10) >= role.tokenCount),
+              map((role) => role.roles),
+              flatten(),
+              map((r) => r.roleId)
             )
           ),
           flatten()

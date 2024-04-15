@@ -12,17 +12,19 @@ import { setupGuild } from "../util/server";
 import { getCollection, getToken } from "../util/api";
 import { map } from "remeda";
 
+
 export default {
   data: new SlashCommandBuilder()
     .setName("setup")
     .setDescription("Setup the bot")
     .setDefaultMemberPermissions(PermissionFlagsBits.Administrator)
     .addStringOption((option) => option.setName("collection").setDescription("Enter collection ID").setRequired(true))
+    .addIntegerOption((option) => option.setName("balance").setDescription("Enter balance of the token or Enter account count of the collection"))
     .addStringOption((option) => option.setName("asset").setDescription("Enter Asset ID"))
     .setDMPermission(false),
 
   async handler(interaction: ChatInputCommandInteraction) {
-    setupGuild(interaction.guildId!, interaction.guild!.name);
+    setupGuild(interaction.guildId as string, interaction.guild?.name ?? '');
     if (!interaction.inGuild()) {
       return interaction.reply({ content: "This command can only be used in a server.", ephemeral: true });
     }
@@ -33,6 +35,11 @@ export default {
 
     const collectionId = interaction.options.getString("collection", true).trim();
     const tokenId = interaction.options.getString("asset", false);
+    const balance = interaction.options.getInteger("balance", false) || 1;
+
+    if (balance > Number.MAX_SAFE_INTEGER && balance < 1) {
+      return interaction.reply({ content: "Balance should be b/w 1 to 2^53", ephemeral: true });
+    }
 
     const roleBuilder = new RoleSelectMenuBuilder().setCustomId("role").setPlaceholder("Select a role").setMinValues(1).setMaxValues(5);
     const row = new ActionRowBuilder<RoleSelectMenuBuilder>().addComponents(roleBuilder);
@@ -58,13 +65,18 @@ export default {
           return;
         }
         await db
-          .delete(schema.serverTokenRoles)
-          .where(and(eq(schema.serverTokenRoles.serverId, interaction.guildId!), eq(schema.serverTokenRoles.tokenId, assetId)))
+          .delete(schema.tokenRoles)
+          .where(and(eq(schema.tokenRoles.serverId, interaction.guildId), eq(schema.tokenRoles.tokenId, assetId)))
           .execute();
 
         await db
-          .insert(schema.serverTokenRoles)
-          .values(map(i.values, (r) => ({ serverId: interaction.guildId!, tokenId: assetId, roleId: r })))
+          .insert(schema.tokenRoles)
+          .values({ serverId: interaction.guildId, tokenId: assetId, balance })
+          .execute();
+
+        await db
+          .insert(schema.roles)
+          .values(map(i.values, (r) => ({ serverId: interaction.guildId, tokenId: assetId, roleId: r })))
           .execute();
 
         await i.reply({
@@ -97,13 +109,15 @@ export default {
         }
 
         await db
-          .delete(schema.serverCollectionRoles)
-          .where(and(eq(schema.serverCollectionRoles.serverId, interaction.guildId!), eq(schema.serverCollectionRoles.collectionId, collectionId)))
+          .delete(schema.collectionRoles)
+          .where(and(eq(schema.collectionRoles.serverId, interaction.guildId), eq(schema.collectionRoles.collectionId, collectionId)))
           .execute();
 
+        await db.insert(schema.collectionRoles).values({ serverId: interaction.guildId, collectionId, tokenCount: balance }).execute();
+
         await db
-          .insert(schema.serverCollectionRoles)
-          .values(map(i.values, (r) => ({ serverId: interaction.guildId!, collectionId, roleId: r })))
+          .insert(schema.roles)
+          .values(map(i.values, (r) => ({ serverId: interaction.guildId, collectionId, roleId: r, tokenCount: balance })))
           .execute();
 
         await i.reply({
