@@ -259,7 +259,7 @@ export const connectWallet = async (interaction: ButtonInteraction) => {
             ...embedResultField,
             {
               name: "And have been granted these roles:",
-              value: `- ${totalRoles.map((role) => role.name).join("\n- ")}`,
+              value: `- ${uniqBy(totalRoles, (r) => r.id).map((role) => role.name).join("\n- ")}`,
               inline: false
             },
             {
