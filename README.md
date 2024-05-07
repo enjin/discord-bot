@@ -8,7 +8,7 @@ The Enjin Discord bot, powered by Discord.js and Bun runtime, enables role assig
 
 ### Invite the Bot
 
-To add the Enjin Discord bot to your guild (server), click on the following link: [Invite Enjin Bot](https://enjin.io/discord-bot)
+To add the Enjin Discord bot to your guild (server), click on the following link: [Invite Enjin Bot](https://enj.in/discord-bot)
 
 ### Setting Up Rules 
 
