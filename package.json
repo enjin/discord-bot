@@ -5,7 +5,7 @@
   "scripts": {
     "build": "rm -rf dist && bun build --target=bun --root . backend/index.ts --outdir=dist",
     "dev": "bun run backend/index.ts",
-    "lint":"eslint \"./backend/**/*.ts\"",
+    "lint": "eslint \"./backend/**/*.ts\"",
     "db:push": "bun run drizzle-kit push:mysql --config backend/db/drizzle.config.ts",
     "db:generate": "bun run drizzle-kit generate:mysql --config backend/db/drizzle.config.ts",
     "db:migrate": "bun run backend/db/migrate.ts"
@@ -34,7 +34,7 @@
     "@polkadot/api": "^10.11.2",
     "@polkadot/util": "^12.6.2",
     "@polkadot/util-crypto": "^12.6.2",
-    "@walletconnect/sign-client": "^2.11.0",
+    "@walletconnect/sign-client": "^2.13.0",
     "cron": "^3.1.6",
     "discord.js": "^14.14.1",
     "drizzle-orm": "^0.30.8",

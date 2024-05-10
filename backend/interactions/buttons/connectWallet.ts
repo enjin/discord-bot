@@ -272,14 +272,6 @@ export const connectWallet = async (interaction: ButtonInteraction) => {
         const embedBuilder = new EmbedBuilder(embed);
 
         await interaction.followUp({ content: "✅ Wallet connected successfully.", embeds: [embedBuilder], ephemeral: true });
-
-        interaction.client.users
-          .send(interaction.member.user.id, {
-            embeds: [embedBuilder]
-          })
-          .catch(() => {
-            // ignore
-          });
       }
     } catch (error: any) {
       if (error.code === RESTJSONErrorCodes.MissingPermissions) {
