@@ -8,6 +8,13 @@
       "when": 1712881843929,
       "tag": "0000_yummy_wraith",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "5",
+      "when": 1715729969948,
+      "tag": "0001_brown_champions",
+      "breakpoints": true
     }
   ]
 }
