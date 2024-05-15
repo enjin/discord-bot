@@ -11,6 +11,7 @@ export default {
     .setDescription("Remove roles from the token or collection")
     .setDefaultMemberPermissions(PermissionFlagsBits.Administrator)
     .addStringOption((option) => option.setName("collection").setDescription("Enter collection ID").setRequired(true))
+    .addIntegerOption((option) => option.setName("balance").setDescription("Enter balance of token/collection").setRequired(true))
     .addStringOption((option) => option.setName("asset").setDescription("Enter Asset ID"))
     .setDMPermission(false),
 
@@ -26,6 +27,7 @@ export default {
 
     const collectionId = interaction.options.getString("collection", true).trim();
     const tokenId = interaction.options.getString("asset", false);
+    const balance = interaction.options.getInteger("balance", false) || 1;
 
     const accounts = await db.query.connectedAccounts
       .findMany({
@@ -39,27 +41,43 @@ export default {
     if (tokenId !== null) {
       const assetId = `${collectionId}-${tokenId.trim()}`;
 
-      await db
+      const result = await db
         .delete(schema.tokenRoles)
-        .where(and(eq(schema.tokenRoles.serverId, interaction.guildId), eq(schema.tokenRoles.tokenId, assetId)))
+        .where(
+          and(eq(schema.tokenRoles.serverId, interaction.guildId), eq(schema.tokenRoles.tokenId, assetId), eq(schema.tokenRoles.balance, balance))
+        )
         .execute();
+
+        if (result[0].affectedRows === 0) {
+          return interaction.reply({ content: `No roles found for ${assetId} - ${balance}`, ephemeral: true });
+        }
 
       for (const account of accounts) {
         manageUserRoles(client, interaction.guildId, account.userId);
       }
 
-      return interaction.reply({ content: `Roles removed for ${assetId}`, ephemeral: true });
+      return interaction.reply({ content: `Roles removed for ${assetId} - ${balance}`, ephemeral: true });
     } else {
-      await db
+      const result = await db
         .delete(schema.collectionRoles)
-        .where(and(eq(schema.collectionRoles.serverId, interaction.guildId), eq(schema.collectionRoles.collectionId, collectionId)))
+        .where(
+          and(
+            eq(schema.collectionRoles.serverId, interaction.guildId),
+            eq(schema.collectionRoles.collectionId, collectionId),
+            eq(schema.collectionRoles.tokenCount, balance)
+          )
+        )
         .execute();
+
+      if (result[0].affectedRows === 0) {
+        return interaction.reply({ content: `No roles found for ${collectionId} - ${balance}`, ephemeral: true });
+      }
 
       for (const account of accounts) {
         manageUserRoles(client, interaction.guildId, account.userId);
       }
 
-      return interaction.reply({ content: `Roles removed for ${collectionId}`, ephemeral: true });
+      return interaction.reply({ content: `Roles removed for ${collectionId} - ${balance}`, ephemeral: true });
     }
   }
 };

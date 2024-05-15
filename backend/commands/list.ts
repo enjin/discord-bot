@@ -27,32 +27,10 @@ export default {
     }
 
     const tokenRoles = await db.query.tokenRoles.findMany({
-      columns: {
-        tokenId: true,
-        balance: true
-      },
-      with: {
-        roles: {
-          columns: {
-            roleId: true
-          }
-        }
-      },
       where: (tokenRoles, { eq }) => eq(tokenRoles.serverId, interaction.guildId)
     });
 
     const collectionRoles = await db.query.collectionRoles.findMany({
-      columns: {
-        collectionId: true,
-        tokenCount: true
-      },
-      with: {
-        roles: {
-          columns: {
-            roleId: true
-          }
-        }
-      },
       where: (collectionRoles, { eq }) => eq(collectionRoles.serverId, interaction.guildId)
     });
 
@@ -60,13 +38,8 @@ export default {
       return interaction.reply({ content: "No roles configured.", ephemeral: true });
     }
 
-    let collectionMessage = collectionRoles.reduce((content, { roles, collectionId, tokenCount }, index) => {
-      return (
-        content +
-        `${index + 1}. ${collectionId} (x${tokenCount}) has role${roles.length === 1 ? "" : "s"} ${roles
-          .map((r) => interaction.guild?.roles.cache.get(r.roleId))
-          .join(", ")}\n`
-      );
+    let collectionMessage = collectionRoles.reduce((content, { roleId, collectionId, tokenCount }, index) => {
+      return content + `${index + 1}. ${collectionId} (x${tokenCount}) has role ${interaction.guild?.roles.cache.get(roleId)}\n`;
     }, "");
 
     if (collectionRoles.length > 0) {
@@ -77,13 +50,8 @@ export default {
       collectionMessage += "\n## Tokens\n";
     }
 
-    const message = tokenRoles.reduce((content, { roles, tokenId, balance }, index) => {
-      return (
-        content +
-        `${index + 1}. ${tokenId} (x${balance}) has role${roles.length === 1 ? "" : "s"} ${roles
-          .map((r) => interaction.guild?.roles.cache.get(r.roleId))
-          .join(", ")}\n`
-      );
+    const message = tokenRoles.reduce((content, { roleId, tokenId, balance }, index) => {
+      return content + `${index + 1}. ${tokenId} (x${balance}) has role ${interaction.guild?.roles.cache.get(roleId)}\n`;
     }, collectionMessage);
 
     return interaction.reply({ content: message, ephemeral: true });

@@ -33,32 +33,10 @@ export const connectWallet = async (interaction: ButtonInteraction) => {
     const addresses = session.namespaces.polkadot.accounts.map((n) => n.slice(config.wcNamespace.length + 1));
 
     const tokenRoles = await db.query.tokenRoles.findMany({
-      columns: {
-        tokenId: true,
-        balance: true
-      },
-      with: {
-        roles: {
-          columns: {
-            roleId: true
-          }
-        }
-      },
       where: (tokenRoles, { eq }) => eq(tokenRoles.serverId, interaction.guildId!)
     });
 
     const collectionRoles = await db.query.collectionRoles.findMany({
-      columns: {
-        collectionId: true,
-        tokenCount: true
-      },
-      with: {
-        roles: {
-          columns: {
-            roleId: true
-          }
-        }
-      },
       where: (collectionRoles, { eq }) => eq(collectionRoles.serverId, interaction.guildId!)
     });
 
@@ -86,16 +64,10 @@ export const connectWallet = async (interaction: ButtonInteraction) => {
       map((r) => r.collectionId)
     );
 
-    const uniqueRolesAcrossServer = map(
-      await db.query.roles
-        .findMany({
-          columns: {
-            roleId: true
-          },
-          where: eq(schema.roles.serverId, interaction.guildId!)
-        })
-        .execute(),
-      (r) => r.roleId
+    const uniqueRolesAcrossServer = pipe(
+      concat(tokenRoles, collectionRoles),
+      uniqBy((r) => r.roleId),
+      map((r) => r.roleId)
     );
 
     let totalRoles: Role[] = [];
@@ -121,9 +93,9 @@ export const connectWallet = async (interaction: ButtonInteraction) => {
             pipe(
               tokenRoles,
               filter((role) => role.tokenId === r.token.id && parseInt(r.totalBalance, 10) >= role.balance),
-              map((role) => role.roles),
+              map((role) => role.roleId),
               flatten(),
-              map((r) => interaction.guild!.roles.cache.get(r.roleId) as Role)
+              map((r) => interaction.guild!.roles.cache.get(r) as Role)
             )
           ),
           flatten()
