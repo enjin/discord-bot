@@ -77,7 +77,11 @@ export const connectWallet = async (interaction: ButtonInteraction) => {
     // handle token roles
     if (tokenRoles.length !== 0) {
       const result = await tokenAccountsOfTokens(tokens, addresses);
-      const filteredResult = filter(result, (r) => parseInt(r.totalBalance, 10) > 0 && tokenRoles.some((role) => role.tokenId === r.token.id && parseInt(r.totalBalance, 10) >= role.balance));
+      const filteredResult = filter(
+        result,
+        (r) =>
+          parseInt(r.totalBalance, 10) > 0 && tokenRoles.some((role) => role.tokenId === r.token.id && parseInt(r.totalBalance, 10) >= role.balance)
+      );
 
       accountsToVerify = accountsToVerify.concat(
         pipe(
@@ -94,7 +98,6 @@ export const connectWallet = async (interaction: ButtonInteraction) => {
               tokenRoles,
               filter((role) => role.tokenId === r.token.id && parseInt(r.totalBalance, 10) >= role.balance),
               map((role) => role.roleId),
-              flatten(),
               map((r) => interaction.guild!.roles.cache.get(r) as Role)
             )
           ),
@@ -114,7 +117,12 @@ export const connectWallet = async (interaction: ButtonInteraction) => {
     // handle collection roles
     if (collectionRoles.length !== 0) {
       const result = await collectionAccountsOfCollections(collections, addresses);
-      const filteredResult = filter(result, (r) => parseInt(r.accountCount, 10) > 0 && collectionRoles.some((role) => role.collectionId === r.collection.id && parseInt(r.accountCount, 10) >= role.tokenCount));
+      const filteredResult = filter(
+        result,
+        (r) =>
+          parseInt(r.accountCount, 10) > 0 &&
+          collectionRoles.some((role) => role.collectionId === r.collection.id && parseInt(r.accountCount, 10) >= role.tokenCount)
+      );
 
       accountsToVerify = accountsToVerify.concat(
         pipe(
@@ -130,16 +138,13 @@ export const connectWallet = async (interaction: ButtonInteraction) => {
             pipe(
               collectionRoles,
               filter((role) => role.collectionId === r.collection.id && parseInt(r.accountCount, 10) >= role.tokenCount),
-              map((role) => role.roles),
-              flatten(),
-              map((r) => interaction.guild!.roles.cache.get(r.roleId) as Role)
+              map((role) => role.roleId),
+              map((r) => interaction.guild!.roles.cache.get(r) as Role)
             )
           ),
           flatten()
         )
       );
-
-      
 
       embedResultField.push({
         name: "You own a token from collections:",
@@ -157,12 +162,22 @@ export const connectWallet = async (interaction: ButtonInteraction) => {
         fields: [
           {
             name: "",
-            value: `- ${tokenRoles.map((role) => `Acquire ${role.balance} copies of Token [${role.tokenId}](https://nft.io/asset/${role.tokenId})`).join("\n- ")}`,
+            value: `- ${tokenRoles
+              .map(
+                (role) =>
+                  `Acquire ${role.balance} copies of Token [${role.tokenId}](https://nft.io/asset/${role.tokenId}) to get <@&${role.roleId}> role`
+              )
+              .join("\n- ")}`,
             inline: false
           },
           {
             name: "",
-            value: `- ${collectionRoles.map((role) => `Collect ${role.tokenCount} Tokens from Collection [${role.collectionId}](https://nft.io/collection/${role.collectionId})`).join("\n- ")}`,
+            value: `- ${collectionRoles
+              .map(
+                (role) =>
+                  `Collect ${role.tokenCount} Tokens from Collection [${role.collectionId}](https://nft.io/collection/${role.collectionId}) to get <@&${role.roleId}> role`
+              )
+              .join("\n- ")}`,
             inline: false
           }
         ]
@@ -231,7 +246,9 @@ export const connectWallet = async (interaction: ButtonInteraction) => {
             ...embedResultField,
             {
               name: "And have been granted these roles:",
-              value: `- ${uniqBy(totalRoles, (r) => r.id).map((role) => role.name).join("\n- ")}`,
+              value: `- ${uniqBy(totalRoles, (r) => r.id)
+                .map((role) => role.name)
+                .join("\n- ")}`,
               inline: false
             },
             {

@@ -1,7 +1,7 @@
 import { EmbedBuilder, type Client, type Guild, type EmbedData } from "discord.js";
 import { db, schema } from "@/db";
 import { eq } from "drizzle-orm";
-import { filter, map, pipe, flatten, difference, concat, uniq, intersection } from "remeda";
+import { filter, map, pipe, flatten, difference, concat, uniq, intersection, uniqBy } from "remeda";
 import { collectionAccountsOfCollections, tokenAccountsOfTokens } from "@/util/api";
 
 export default async function manageUserRoles(client: Client, serverId: string, memberId: string) {
@@ -35,32 +35,10 @@ export default async function manageUserRoles(client: Client, serverId: string, 
     }
 
     const tokenRoles = await db.query.tokenRoles.findMany({
-      columns: {
-        tokenId: true,
-        balance: true
-      },
-      with: {
-        roles: {
-          columns: {
-            roleId: true
-          }
-        }
-      },
       where: (tokenRoles, { eq }) => eq(tokenRoles.serverId, serverId)
     });
 
     const collectionRoles = await db.query.collectionRoles.findMany({
-      columns: {
-        collectionId: true,
-        tokenCount: true
-      },
-      with: {
-        roles: {
-          columns: {
-            roleId: true
-          }
-        }
-      },
       where: (collectionRoles, { eq }) => eq(collectionRoles.serverId, serverId)
     });
 
@@ -74,16 +52,10 @@ export default async function manageUserRoles(client: Client, serverId: string, 
       map((r) => r.collectionId)
     );
 
-    const uniqueRolesAcrossServer = map(
-      await db.query.roles
-        .findMany({
-          columns: {
-            roleId: true
-          },
-          where: eq(schema.roles.serverId, serverId)
-        })
-        .execute(),
-      (r) => r.roleId
+    const uniqueRolesAcrossServer = pipe(
+      concat(tokenRoles, collectionRoles),
+      uniqBy((r) => r.roleId),
+      map((r) => r.roleId)
     );
 
     const addresses = await db
@@ -113,9 +85,7 @@ export default async function manageUserRoles(client: Client, serverId: string, 
             pipe(
               tokenRoles,
               filter((role) => role.tokenId === r.token.id && parseInt(r.totalBalance, 10) >= role.balance),
-              map((role) => role.roles),
-              flatten(),
-              map((r) => r.roleId)
+              map((role) => role.roleId)
             )
           ),
           flatten()
@@ -142,8 +112,6 @@ export default async function manageUserRoles(client: Client, serverId: string, 
             pipe(
               collectionRoles,
               filter((role) => role.collectionId === r.collection.id && parseInt(r.accountCount, 10) >= role.tokenCount),
-              map((role) => role.roles),
-              flatten(),
               map((r) => r.roleId)
             )
           ),
