@@ -67,7 +67,7 @@ export default {
     } catch (error) {
       if ((error as RESTError).code === RESTJSONErrorCodes.MissingAccess) {
         return interaction.reply({
-          content: `Hey ${interaction.member.user.username}, This channel is set to private, and I'm unable to send messages here without the necessary permissions. \nCould you please add my role to the channel permissions and then try again?`,
+          content: `Hey ${interaction.member.user.username}, This channel is set to private, and I'm unable to send messages here without the necessary  permissions. \nCould you please add my role to the channel permissions and then try again?`,
           ephemeral: true
         });
       } else {

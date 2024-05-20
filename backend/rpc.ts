@@ -5,9 +5,9 @@ import { client } from "@/bot";
 import { getRpcApi } from "@/util/rpc-client";
 
 async function dispatchToManager(address: string) {
-  // delay for 30 seconds.
+  // delay for 60 seconds.
   // This is to ensure that the indexer has indexed the transaction before we query the database.
-  await new Promise((resolve) => setTimeout(resolve, 30000));
+  await new Promise((resolve) => setTimeout(resolve, 60_000));
 
   const accounts = await db.select().from(schema.accountAddress).where(eq(schema.accountAddress.address, address));
 

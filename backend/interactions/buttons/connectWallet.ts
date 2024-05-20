@@ -33,32 +33,10 @@ export const connectWallet = async (interaction: ButtonInteraction) => {
     const addresses = session.namespaces.polkadot.accounts.map((n) => n.slice(config.wcNamespace.length + 1));
 
     const tokenRoles = await db.query.tokenRoles.findMany({
-      columns: {
-        tokenId: true,
-        balance: true
-      },
-      with: {
-        roles: {
-          columns: {
-            roleId: true
-          }
-        }
-      },
       where: (tokenRoles, { eq }) => eq(tokenRoles.serverId, interaction.guildId!)
     });
 
     const collectionRoles = await db.query.collectionRoles.findMany({
-      columns: {
-        collectionId: true,
-        tokenCount: true
-      },
-      with: {
-        roles: {
-          columns: {
-            roleId: true
-          }
-        }
-      },
       where: (collectionRoles, { eq }) => eq(collectionRoles.serverId, interaction.guildId!)
     });
 
@@ -86,16 +64,10 @@ export const connectWallet = async (interaction: ButtonInteraction) => {
       map((r) => r.collectionId)
     );
 
-    const uniqueRolesAcrossServer = map(
-      await db.query.roles
-        .findMany({
-          columns: {
-            roleId: true
-          },
-          where: eq(schema.roles.serverId, interaction.guildId!)
-        })
-        .execute(),
-      (r) => r.roleId
+    const uniqueRolesAcrossServer = pipe(
+      concat(tokenRoles, collectionRoles),
+      uniqBy((r) => r.roleId),
+      map((r) => r.roleId)
     );
 
     let totalRoles: Role[] = [];
@@ -105,7 +77,11 @@ export const connectWallet = async (interaction: ButtonInteraction) => {
     // handle token roles
     if (tokenRoles.length !== 0) {
       const result = await tokenAccountsOfTokens(tokens, addresses);
-      const filteredResult = filter(result, (r) => parseInt(r.totalBalance, 10) > 0 && tokenRoles.some((role) => role.tokenId === r.token.id && parseInt(r.totalBalance, 10) >= role.balance));
+      const filteredResult = filter(
+        result,
+        (r) =>
+          parseInt(r.totalBalance, 10) > 0 && tokenRoles.some((role) => role.tokenId === r.token.id && parseInt(r.totalBalance, 10) >= role.balance)
+      );
 
       accountsToVerify = accountsToVerify.concat(
         pipe(
@@ -121,9 +97,8 @@ export const connectWallet = async (interaction: ButtonInteraction) => {
             pipe(
               tokenRoles,
               filter((role) => role.tokenId === r.token.id && parseInt(r.totalBalance, 10) >= role.balance),
-              map((role) => role.roles),
-              flatten(),
-              map((r) => interaction.guild!.roles.cache.get(r.roleId) as Role)
+              map((role) => role.roleId),
+              map((r) => interaction.guild!.roles.cache.get(r) as Role)
             )
           ),
           flatten()
@@ -142,7 +117,12 @@ export const connectWallet = async (interaction: ButtonInteraction) => {
     // handle collection roles
     if (collectionRoles.length !== 0) {
       const result = await collectionAccountsOfCollections(collections, addresses);
-      const filteredResult = filter(result, (r) => parseInt(r.accountCount, 10) > 0 && collectionRoles.some((role) => role.collectionId === r.collection.id && parseInt(r.accountCount, 10) >= role.tokenCount));
+      const filteredResult = filter(
+        result,
+        (r) =>
+          parseInt(r.accountCount, 10) > 0 &&
+          collectionRoles.some((role) => role.collectionId === r.collection.id && parseInt(r.accountCount, 10) >= role.tokenCount)
+      );
 
       accountsToVerify = accountsToVerify.concat(
         pipe(
@@ -158,16 +138,13 @@ export const connectWallet = async (interaction: ButtonInteraction) => {
             pipe(
               collectionRoles,
               filter((role) => role.collectionId === r.collection.id && parseInt(r.accountCount, 10) >= role.tokenCount),
-              map((role) => role.roles),
-              flatten(),
-              map((r) => interaction.guild!.roles.cache.get(r.roleId) as Role)
+              map((role) => role.roleId),
+              map((r) => interaction.guild!.roles.cache.get(r) as Role)
             )
           ),
           flatten()
         )
       );
-
-      
 
       embedResultField.push({
         name: "You own a token from collections:",
@@ -185,12 +162,22 @@ export const connectWallet = async (interaction: ButtonInteraction) => {
         fields: [
           {
             name: "",
-            value: `- ${tokenRoles.map((role) => `Acquire ${role.balance} copies of Token [${role.tokenId}](https://nft.io/asset/${role.tokenId})`).join("\n- ")}`,
+            value: `- ${tokenRoles
+              .map(
+                (role) =>
+                  `Acquire ${role.balance} copies of Token [${role.tokenId}](https://nft.io/asset/${role.tokenId}) to get <@&${role.roleId}> role`
+              )
+              .join("\n- ")}`,
             inline: false
           },
           {
             name: "",
-            value: `- ${collectionRoles.map((role) => `Collect ${role.tokenCount} Tokens from Collection [${role.collectionId}](https://nft.io/collection/${role.collectionId})`).join("\n- ")}`,
+            value: `- ${collectionRoles
+              .map(
+                (role) =>
+                  `Collect ${role.tokenCount} Tokens from Collection [${role.collectionId}](https://nft.io/collection/${role.collectionId}) to get <@&${role.roleId}> role`
+              )
+              .join("\n- ")}`,
             inline: false
           }
         ]
@@ -259,7 +246,9 @@ export const connectWallet = async (interaction: ButtonInteraction) => {
             ...embedResultField,
             {
               name: "And have been granted these roles:",
-              value: `- ${uniqBy(totalRoles, (r) => r.id).map((role) => role.name).join("\n- ")}`,
+              value: `- ${uniqBy(totalRoles, (r) => r.id)
+                .map((role) => role.name)
+                .join("\n- ")}`,
               inline: false
             },
             {

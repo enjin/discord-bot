@@ -6,6 +6,7 @@
     "build": "rm -rf dist && bun build --target=bun --root . backend/index.ts --outdir=dist",
     "dev": "bun run backend/index.ts",
     "lint": "eslint \"./backend/**/*.ts\"",
+    "typecheck": "tsc --noEmit --pretty",
     "db:push": "bun run drizzle-kit push:mysql --config backend/db/drizzle.config.ts",
     "db:generate": "bun run drizzle-kit generate:mysql --config backend/db/drizzle.config.ts",
     "db:migrate": "bun run backend/db/migrate.ts"
