@@ -1,0 +1,1 @@
+ALTER TABLE `servers` ADD `on_connect_role_id` varchar(20);

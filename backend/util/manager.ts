@@ -1,6 +1,7 @@
 import { EmbedBuilder, type Client, type Guild, type EmbedData } from "discord.js";
 import { db, schema } from "@/db";
 import { eq } from "drizzle-orm";
+import { getServerOrFail } from "@/util/server";
 import { filter, map, pipe, flatten, difference, concat, uniq, intersection, uniqBy } from "remeda";
 import { collectionAccountsOfCollections, tokenAccountsOfTokens } from "@/util/api";
 
@@ -34,13 +35,15 @@ export default async function manageUserRoles(client: Client, serverId: string, 
       //TODO: remove the connected account from the database
     }
 
-    const tokenRoles = await db.query.tokenRoles.findMany({
-      where: (tokenRoles, { eq }) => eq(tokenRoles.serverId, serverId)
-    });
-
-    const collectionRoles = await db.query.collectionRoles.findMany({
-      where: (collectionRoles, { eq }) => eq(collectionRoles.serverId, serverId)
-    });
+    const [server, tokenRoles, collectionRoles] = await Promise.all([
+      getServerOrFail(serverId),
+      db.query.tokenRoles.findMany({
+        where: (tokenRoles, { eq }) => eq(tokenRoles.serverId, serverId)
+      }),
+      db.query.collectionRoles.findMany({
+        where: (collectionRoles, { eq }) => eq(collectionRoles.serverId, serverId)
+      })
+    ]);
 
     const tokens = pipe(
       tokenRoles,
@@ -66,6 +69,13 @@ export default async function manageUserRoles(client: Client, serverId: string, 
       .where(eq(schema.accountAddress.memberId, `${serverId}-${memberId}`));
 
     let totalRoles: string[] = [];
+
+    if (server.onConnectRoleId) {
+      const role = guild.roles.cache.get(server.onConnectRoleId);
+      if (role) {
+        totalRoles.push(role.id);
+      }
+    }
 
     if (tokenRoles.length !== 0) {
       const result = await tokenAccountsOfTokens(

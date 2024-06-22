@@ -15,6 +15,13 @@
       "when": 1715729969948,
       "tag": "0001_brown_champions",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "5",
+      "when": 1718990779045,
+      "tag": "0002_handy_zaladane",
+      "breakpoints": true
     }
   ]
 }

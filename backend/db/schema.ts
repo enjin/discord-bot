@@ -4,7 +4,8 @@ export const servers = mysqlTable("servers", {
   id: varchar("id", { length: 20 }).primaryKey(), // guildId
   name: text("name"),
   connectedAt: timestamp("connected_at").defaultNow(),
-  version: int("version").notNull()
+  version: int("version").notNull(),
+  onConnectRoleId: varchar("on_connect_role_id", { length: 20 })
 });
 
 export const connectedAccounts = mysqlTable("connected_accounts", {

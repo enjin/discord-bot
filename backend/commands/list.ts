@@ -50,9 +50,13 @@ export default {
       collectionMessage += "\n## Tokens\n";
     }
 
-    const message = tokenRoles.reduce((content, { roleId, tokenId, balance }, index) => {
+    let message = tokenRoles.reduce((content, { roleId, tokenId, balance }, index) => {
       return content + `${index + 1}. ${tokenId} (x${balance}) has role ${interaction.guild?.roles.cache.get(roleId)}\n`;
     }, collectionMessage);
+
+    if (server.onConnectRoleId) {
+      message += `\n## On Connect\n* ${interaction.guild?.roles.cache.get(server.onConnectRoleId)}`;
+    }
 
     return interaction.reply({ content: message, ephemeral: true });
   }
