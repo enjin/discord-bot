@@ -120,13 +120,15 @@ export const connectWallet = async (interaction: ButtonInteraction) => {
         )
       );
 
-      embedResultField.push({
-        name: "You own the following tokens:",
-        value: `- ${uniqBy(filteredResult, (r) => r.token.id)
-          .map((r) => r.token.metadata?.name ?? r.token.id)
-          .join("\n- ")}`,
-        inline: false
-      });
+      if (filteredResult.length > 0) {
+        embedResultField.push({
+          name: "You own the following tokens:",
+          value: `- ${uniqBy(filteredResult, (r) => r.token.id)
+            .map((r) => r.token.metadata?.name ?? r.token.id)
+            .join("\n- ")}`,
+          inline: false
+        });
+      }
     }
 
     // handle collection roles
@@ -161,13 +163,15 @@ export const connectWallet = async (interaction: ButtonInteraction) => {
         )
       );
 
-      embedResultField.push({
-        name: "You own a token from collections:",
-        value: `- ${uniqBy(filteredResult, (r) => r.collection.id)
-          .map((r: any) => r.collection.metadata?.name ?? r.collection.id)
-          .join("\n- ")}`,
-        inline: false
-      });
+      if (filteredResult.length > 0) {
+        embedResultField.push({
+          name: "You own a token from collections:",
+          value: `- ${uniqBy(filteredResult, (r) => r.collection.id)
+            .map((r: any) => r.collection.metadata?.name ?? r.collection.id)
+            .join("\n- ")}`,
+          inline: false
+        });
+      }
     }
 
     if (totalRoles.length === 0) {
