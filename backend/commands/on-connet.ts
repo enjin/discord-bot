@@ -1,14 +1,7 @@
-import {
-  SlashCommandBuilder,
-  PermissionFlagsBits,
-  ChatInputCommandInteraction,
-  ActionRowBuilder,
-  RoleSelectMenuBuilder,
-  ComponentType
-} from "discord.js";
+import { SlashCommandBuilder, PermissionFlagsBits, ChatInputCommandInteraction } from "discord.js";
 import { db, schema } from "../db";
 import { eq } from "drizzle-orm";
-import { getServerOrFail, setupGuild } from "../util/server";
+import { setupGuild } from "../util/server";
 
 export default {
   data: new SlashCommandBuilder()
