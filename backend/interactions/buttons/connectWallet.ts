@@ -244,12 +244,14 @@ export const connectWallet = async (interaction: ButtonInteraction) => {
         await db.delete(schema.accountAddress).where(eq(schema.accountAddress.memberId, `${interaction.guild!.id}-${interaction.member!.user.id}`));
 
         // save new addresses to db
-        await db.insert(schema.accountAddress).values(
-          map(accountsToVerify, (a) => ({
-            memberId: `${interaction.guild!.id}-${interaction.member!.user.id}`,
-            address: a
-          }))
-        );
+        if (accountsToVerify.length !== 0) {
+          await db.insert(schema.accountAddress).values(
+            map(accountsToVerify, (a) => ({
+              memberId: `${interaction.guild!.id}-${interaction.member!.user.id}`,
+              address: a
+            }))
+          );
+        }
 
         const embed: EmbedData = {
           title: `You have successfully linked your wallet to ${interaction.guild!.name}`,

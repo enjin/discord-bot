@@ -55,7 +55,7 @@ export default {
     }, collectionMessage);
 
     if (server.onConnectRoleId) {
-      message += `\n## On Connect Role\n${interaction.guild?.roles.cache.get(server.onConnectRoleId)}`;
+      message += `\n## On Connect\n* ${interaction.guild?.roles.cache.get(server.onConnectRoleId)}`;
     }
 
     return interaction.reply({ content: message, ephemeral: true });
