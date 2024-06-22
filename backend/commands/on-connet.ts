@@ -14,6 +14,7 @@ export default {
   data: new SlashCommandBuilder()
     .setName("on-connect")
     .setDescription("Add roles to users when they connect their wallet")
+    .addRoleOption((option) => option.setName("role").setDescription("The role to add to users when they connect their wallet").setRequired(true))
     .setDefaultMemberPermissions(PermissionFlagsBits.Administrator)
     .setDMPermission(false),
 
@@ -27,41 +28,23 @@ export default {
       return interaction.reply({ content: "You do not have permission to run this command.", ephemeral: true });
     }
 
-    const roleBuilder = new RoleSelectMenuBuilder().setCustomId("role").setPlaceholder("Select a role").setMinValues(1).setMaxValues(1);
-    const row = new ActionRowBuilder<RoleSelectMenuBuilder>().addComponents(roleBuilder);
+    const role = interaction.options.getRole("role", true);
 
-    // Collection
-    const server = await getServerOrFail(interaction.guildId);
+    if (role.managed) {
+      return interaction.reply({ content: "You cannot set a managed role.", ephemeral: true });
+    }
 
-    const response = await interaction.reply({
-      components: [row],
-      content: `Please select a role`,
+    await db
+      .update(schema.servers)
+      .set({
+        onConnectRoleId: role.id
+      })
+      .where(eq(schema.servers.id, interaction.guildId))
+      .execute();
+
+    await interaction.reply({
+      content: `The role has been set, users will now receive this role when they connect their wallet.`,
       ephemeral: true
-    });
-
-    const collector = response.createMessageComponentCollector({ componentType: ComponentType.RoleSelect, time: 30_000 });
-
-    collector.on("collect", async (i) => {
-      if (i.roles.some((r) => r.managed)) {
-        i.reply({ content: "You cannot select managed roles", ephemeral: true });
-        interaction.deleteReply();
-        return;
-      }
-
-      await db
-        .update(schema.servers)
-        .set({
-          onConnectRoleId: i.roles.first()?.id
-        })
-        .where(eq(schema.servers.id, interaction.guildId))
-        .execute();
-
-      await i.reply({
-        content: `The role has been set, users will now receive this role when they connect their wallet.`,
-        ephemeral: true
-      });
-
-      return interaction.deleteReply();
     });
   }
 };
