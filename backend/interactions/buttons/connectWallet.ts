@@ -261,7 +261,7 @@ export const connectWallet = async (interaction: ButtonInteraction) => {
           title: `You have successfully linked your wallet to ${interaction.guild!.name}`,
           color: 0x7567ce,
           image: {
-            url: "https://cdn.enjin.io/wallet-linked.gif"
+            url: "https://cdn.enjin.io/images/discord/bot/wallet-linked.gif"
           },
           fields: [
             ...embedResultField,
