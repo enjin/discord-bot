@@ -49,7 +49,7 @@ export default {
       description: description ?? undefined,
       color: 0xffffff,
       image: {
-        url: "https://cdn.enjin.io/wallet-connect.gif"
+        url: "https://cdn.enjin.io/images/discord/bot/wallet-connect.gif"
       }
     };
 
