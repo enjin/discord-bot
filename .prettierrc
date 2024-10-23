@@ -4,8 +4,8 @@
 	"tabWidth": 4,
 	"trailingComma": "none",
 	"printWidth": 160,
-    "useTabs": true,
-    "bracketSpacing": true,
+	"useTabs": true,
+	"bracketSpacing": true,
 	"singleAttributePerLine": true,
 	"arrowParens": "always"
 }
