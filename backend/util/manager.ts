@@ -1,4 +1,4 @@
-import { EmbedBuilder, type Client, type Guild, type EmbedData } from "discord.js";
+import { EmbedBuilder, RESTJSONErrorCodes, type Client, type Guild, type EmbedData, type GuildMember, type RESTError } from "discord.js";
 import { db, schema } from "@/db";
 import { eq } from "drizzle-orm";
 import { getServerOrFail } from "@/util/server";
@@ -8,6 +8,7 @@ import { collectionAccountsOfCollections, tokenAccountsOfTokens } from "@/util/a
 export default async function manageUserRoles(client: Client, serverId: string, memberId: string) {
 	try {
 		let guild: Guild | null | undefined = null;
+		let member: GuildMember | null = null;
 		guild = client.guilds.cache.get(serverId);
 
 		if (!guild) {
@@ -23,16 +24,23 @@ export default async function manageUserRoles(client: Client, serverId: string, 
 			}
 		}
 
-		const member = await guild.members.fetch({
-			user: memberId,
-			force: true
-		});
+		try {
+			member = await guild.members.fetch({
+				user: memberId,
+				force: true
+			});
+		} catch (error: unknown) {
+			if ((error as RESTError).code === RESTJSONErrorCodes.UnknownMember) {
+				// remove the user from the database
+				await db
+					.delete(schema.connectedAccounts)
+					.where(eq(schema.connectedAccounts.id, `${serverId}-${memberId}`))
+					.execute();
+			}
+		}
 
-		// If the member is still not found, throw an error
 		if (!member) {
-			throw new Error("Member not found");
-
-			//TODO: remove the connected account from the database
+			return;
 		}
 
 		const [server, tokenRoles, collectionRoles] = await Promise.all([
