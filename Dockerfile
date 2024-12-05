@@ -1,5 +1,5 @@
 # see all versions at https://hub.docker.com/r/oven/bun/tags
-FROM oven/bun:latest as base
+FROM oven/bun:1.1.38 as base
 WORKDIR /app
 
 # this will cache them and speed up future builds
