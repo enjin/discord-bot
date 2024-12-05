@@ -1,6 +1,7 @@
 import { Client, Events, GatewayIntentBits } from "discord.js";
 import { commandCollection } from "./commands";
 import config from "./config";
+import * as Sentry from "@sentry/bun";
 import { removeGuild, setupGuild } from "./util/server";
 import buttonInteractions from "@/interactions/buttons";
 
@@ -45,7 +46,8 @@ client.on(Events.InteractionCreate, async (interaction) => {
       await buttonInteractions[interaction.customId as keyof typeof buttonInteractions](interaction);
     }
   } catch (error) {
-    console.error(error, interaction.guildId);
+    console.log(error);
+    Sentry.captureException(error);
     if (interaction.isRepliable()) {
       await interaction.reply({ content: "There was an error while executing this command!", ephemeral: true });
     }
